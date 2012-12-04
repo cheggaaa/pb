@@ -30,14 +30,14 @@ Result will be like this:
 23976 / 100000 [==============>___________________________________________________] 23.98 %
 ```
 
+
 More functions?  
-```Go
+```Go  
 // create bar
 bar := pb.New(count)
 
 // refresh info every second (default 200ms)
 bar.RefreshRate = time.Second
-
 
 // show percents (by default already true)
 bar.ShowPercent = true
@@ -50,4 +50,14 @@ bar.ShowCounters = false
 
 // and start
 bar.Start()
-```   
+```    
+
+Not like the looks?
+```Go
+	// insert before usage
+	pb.BarStart = "<"
+	pb.BarEnd   = ">"
+	pb.Empty    = " "
+	pb.Current  = "-"
+	pb.CurrentN = "."
+```
