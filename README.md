@@ -54,10 +54,10 @@ bar.Start()
 
 Not like the looks?
 ```Go
-	// insert before usage
-	pb.BarStart = "<"
-	pb.BarEnd   = ">"
-	pb.Empty    = " "
-	pb.Current  = "-"
-	pb.CurrentN = "."
+// insert before usage
+pb.BarStart = "<"
+pb.BarEnd   = ">"
+pb.Empty    = " "
+pb.Current  = "-"
+pb.CurrentN = "."
 ```
