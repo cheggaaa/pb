@@ -29,3 +29,25 @@ Result will be like this:
 > go run test.go
 23976 / 100000 [==============>___________________________________________________] 23.98 %
 ```
+
+More function?  
+```Go
+// create bar
+bar := pb.New(count)
+
+// refresh info every second (default 200ms)
+bar.RefreshRate = time.Second
+
+
+// show percents (by default already true)
+bar.ShowPercent = true
+
+// show bar (by default already true)
+bar.ShowPercent = true
+
+// no need counters
+bar.ShowCounters = false
+
+// and start
+bar.Start()
+```   
