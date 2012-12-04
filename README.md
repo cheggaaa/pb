@@ -30,7 +30,7 @@ Result will be like this:
 23976 / 100000 [==============>___________________________________________________] 23.98 %
 ```
 
-More function?  
+More functions?  
 ```Go
 // create bar
 bar := pb.New(count)
