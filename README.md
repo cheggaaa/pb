@@ -1,4 +1,4 @@
-### Terminal progress bar for Go  
+## Terminal progress bar for Go  
 
 ### Installation
 ```
@@ -26,6 +26,6 @@ func main() {
 ```   
 Result will be like this:
 ```
+> go run test.go
 23976 / 100000 [==============>___________________________________________________] 23.98 %
 ```
-

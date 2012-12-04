@@ -82,7 +82,7 @@ func (pb *ProgressBar) Finish() {
 // End print and write string 'str'
 func (pb *ProgressBar) FinishPrint(str string) {
 	pb.Finish()
-	fmt.Println(str)
+	fmt.Println(bold(str))
 }
 
 
@@ -117,11 +117,22 @@ func (pb *ProgressBar) write(current int64) {
 		}
 	} 
 	
+	// check len
 	out = countersBox + barBox + percentBox
 	if len(out) < width {
 		end = strings.Repeat(" ", width - len(out))
 	}
 	
+	// bold
+	if countersBox != "" {
+		countersBox = bold(countersBox)
+	}
+	if percentBox != "" {
+		percentBox = bold(percentBox)
+	}
+	out = countersBox + barBox + percentBox
+	
+	// and print!
 	fmt.Print("\r" + out + end)
 }
 
