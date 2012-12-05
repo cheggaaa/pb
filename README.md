@@ -1,5 +1,7 @@
 ## Terminal progress bar for Go  
 
+Simple progress bar for console programms. Tested on Linux and Mac OSX.   
+
 ### Installation
 ```
 go get github.com/cheggaaa/pb
