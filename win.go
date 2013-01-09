@@ -1,5 +1,7 @@
 // +build windows
 
+package pb
+
 func bold(str string) string {
     return str
 }
