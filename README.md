@@ -29,7 +29,7 @@ func main() {
 Result will be like this:
 ```
 > go run test.go
-23976 / 100000 [==============>___________________________________________________] 23.98 %
+37158 / 100000 [================>_______________________________] 37.16% 1m11s
 ```
 
 
@@ -49,6 +49,9 @@ bar.ShowBar = true
 
 // no need counters
 bar.ShowCounters = false
+
+// show "time left"
+bar.ShowTimeLeft = true
 
 // and start
 bar.Start()
