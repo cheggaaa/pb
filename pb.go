@@ -1,19 +1,16 @@
 package pb
 
 import (
-	"time"
-	"sync/atomic"
-	"runtime"
-	"syscall"
-	"unsafe"
-	"strings"
 	"fmt"
+	"strings"
+	"sync/atomic"
+	"time"
 )
 
 var (
 	// Default refresh rate - 200ms
 	DefaultRefreshRate = time.Millisecond * 200
-	
+
 	BarStart = "["
 	BarEnd   = "]"
 	Empty    = "_"
@@ -21,19 +18,19 @@ var (
 	CurrentN = ">"
 )
 
-const (	
-	TIOCGWINSZ = 0x5413
+const (
+	TIOCGWINSZ     = 0x5413
 	TIOCGWINSZ_OSX = 1074295912
 )
 
 // Create new progress bar object
-func New(total int) (*ProgressBar) {
+func New(total int) *ProgressBar {
 	return &ProgressBar{
-		Total : int64(total),
-		RefreshRate : DefaultRefreshRate,
-		ShowPercent : true,
+		Total:        int64(total),
+		RefreshRate:  DefaultRefreshRate,
+		ShowPercent:  true,
 		ShowCounters: true,
-		ShowBar     : true,
+		ShowBar:      true,
 	}
 }
 
@@ -45,11 +42,11 @@ func StartNew(total int) (pb *ProgressBar) {
 }
 
 type ProgressBar struct {
-	Total int64
-	RefreshRate time.Duration
+	Total                              int64
+	RefreshRate                        time.Duration
 	ShowPercent, ShowCounters, ShowBar bool
-	current int64	
-	isFinish bool
+	current                            int64
+	isFinish                           bool
 }
 
 // Start print
@@ -85,51 +82,50 @@ func (pb *ProgressBar) FinishPrint(str string) {
 	fmt.Println(bold(str))
 }
 
-
 func (pb *ProgressBar) write(current int64) {
 	width, _ := terminalWidth()
 	var percentBox, countersBox, barBox, end, out string
-	
+
 	// percents
 	if pb.ShowPercent {
 		percent := float64(current) / (float64(pb.Total) / float64(100))
 		percentBox = fmt.Sprintf(" %#.02f %% ", percent)
 	}
-	
+
 	// counters
 	if pb.ShowCounters {
 		countersBox = bold(fmt.Sprintf("%d / %d ", current, pb.Total))
 	}
-	
+
 	// bar
 	if pb.ShowBar {
-		size := width - len(countersBox + BarStart + BarEnd + percentBox)
+		size := width - len(countersBox+BarStart+BarEnd+percentBox)
 		if size > 0 {
 			curCount := int(float64(current) / (float64(pb.Total) / float64(size)))
-    		emptCount := size - curCount
-    		barBox = BarStart
-    		if emptCount < 0 {
-    			emptCount = 0
-    		}
-    		if curCount > size {
-    			curCount = size
-    		}
-    		if emptCount <= 0 {
-    				barBox += strings.Repeat(Current, curCount)
-    		} else if curCount > 0 {
-    				barBox += strings.Repeat(Current, curCount - 1) + CurrentN
-    		}
-    		
-    		barBox += strings.Repeat(Empty, emptCount) + BarEnd
+			emptCount := size - curCount
+			barBox = BarStart
+			if emptCount < 0 {
+				emptCount = 0
+			}
+			if curCount > size {
+				curCount = size
+			}
+			if emptCount <= 0 {
+				barBox += strings.Repeat(Current, curCount)
+			} else if curCount > 0 {
+				barBox += strings.Repeat(Current, curCount-1) + CurrentN
+			}
+
+			barBox += strings.Repeat(Empty, emptCount) + BarEnd
 		}
-	} 
-	
+	}
+
 	// check len
 	out = countersBox + barBox + percentBox
 	if len(out) < width {
-		end = strings.Repeat(" ", width - len(out))
+		end = strings.Repeat(" ", width-len(out))
 	}
-	
+
 	// bold
 	if countersBox != "" {
 		countersBox = bold(countersBox)
@@ -138,7 +134,7 @@ func (pb *ProgressBar) write(current int64) {
 		percentBox = bold(percentBox)
 	}
 	out = countersBox + barBox + percentBox
-	
+
 	// and print!
 	fmt.Print("\r" + out + end)
 }
@@ -158,30 +154,9 @@ func (pb *ProgressBar) writer() {
 	}
 }
 
-func bold(str string) string {
-    return "\033[1m" + str + "\033[0m"
-}
-
 type window struct {
-    Row    uint16
-    Col    uint16
-    Xpixel uint16
-    Ypixel uint16
-}
-
-func terminalWidth() (int, error) {
-    w := new(window)
-    tio := TIOCGWINSZ
-    if runtime.GOOS == "darwin" {
-    	tio = TIOCGWINSZ_OSX
-    }
-    res, _, err := syscall.Syscall(syscall.SYS_IOCTL,
-        uintptr(syscall.Stdin),
-        uintptr(tio),
-        uintptr(unsafe.Pointer(w)),
-    )
-    if int(res) == -1 {
-        return 0, err
-    }
-    return int(w.Col), nil
+	Row    uint16
+	Col    uint16
+	Xpixel uint16
+	Ypixel uint16
 }
