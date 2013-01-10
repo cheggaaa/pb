@@ -26,6 +26,7 @@ func New(total int) *ProgressBar {
 		ShowPercent:  true,
 		ShowCounters: true,
 		ShowBar:      true,
+		ShowTimeLeft: true,
 	}
 }
 
@@ -37,15 +38,17 @@ func StartNew(total int) (pb *ProgressBar) {
 }
 
 type ProgressBar struct {
-	Total                              int64
-	RefreshRate                        time.Duration
-	ShowPercent, ShowCounters, ShowBar bool
-	current                            int64
-	isFinish                           bool
+	Total                                            int64
+	RefreshRate                                      time.Duration
+	ShowPercent, ShowCounters, ShowBar, ShowTimeLeft bool
+	current                                          int64
+	isFinish                                         bool
+	startTime                                        time.Time
 }
 
 // Start print
 func (pb *ProgressBar) Start() {
+	pb.startTime = time.Now()
 	go pb.writer()
 }
 
@@ -79,7 +82,7 @@ func (pb *ProgressBar) FinishPrint(str string) {
 
 func (pb *ProgressBar) write(current int64) {
 	width, _ := terminalWidth()
-	var percentBox, countersBox, barBox, end, out string
+	var percentBox, countersBox, timeLeftBox, barBox, end, out string
 
 	// percents
 	if pb.ShowPercent {
@@ -92,9 +95,20 @@ func (pb *ProgressBar) write(current int64) {
 		countersBox = bold(fmt.Sprintf("%d / %d ", current, pb.Total))
 	}
 
+	// time left
+	if pb.ShowTimeLeft && current > 0 {
+		fromStart := time.Now().Sub(pb.startTime)
+		perEntry := fromStart / time.Duration(current)
+		left := time.Duration(pb.Total-current) * perEntry
+		left = (left / time.Second) * time.Second
+		if left > 0 {
+			timeLeftBox = left.String()
+		}
+	}
+
 	// bar
 	if pb.ShowBar {
-		size := width - len(countersBox+BarStart+BarEnd+percentBox)
+		size := width - len(countersBox+BarStart+BarEnd+percentBox+timeLeftBox)
 		if size > 0 {
 			curCount := int(float64(current) / (float64(pb.Total) / float64(size)))
 			emptCount := size - curCount
@@ -116,7 +130,7 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// check len
-	out = countersBox + barBox + percentBox
+	out = countersBox + barBox + percentBox + timeLeftBox
 	if len(out) < width {
 		end = strings.Repeat(" ", width-len(out))
 	}
@@ -128,7 +142,7 @@ func (pb *ProgressBar) write(current int64) {
 	if percentBox != "" {
 		percentBox = bold(percentBox)
 	}
-	out = countersBox + barBox + percentBox
+	out = countersBox + barBox + percentBox + timeLeftBox
 
 	// and print!
 	fmt.Print("\r" + out + end)
