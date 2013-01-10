@@ -18,11 +18,6 @@ var (
 	CurrentN = ">"
 )
 
-const (
-	TIOCGWINSZ     = 0x5413
-	TIOCGWINSZ_OSX = 1074295912
-)
-
 // Create new progress bar object
 func New(total int) *ProgressBar {
 	return &ProgressBar{

@@ -8,6 +8,11 @@ import (
 	"unsafe"
 )
 
+const (
+	TIOCGWINSZ     = 0x5413
+	TIOCGWINSZ_OSX = 1074295912
+)
+
 func bold(str string) string {
 	return "\033[1m" + str + "\033[0m"
 }
