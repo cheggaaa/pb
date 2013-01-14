@@ -7,5 +7,5 @@ func bold(str string) string {
 }
 
 func terminalWidth() (int, error) {
-    return 80, nil
+    return 81, nil
 }
