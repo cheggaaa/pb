@@ -1,8 +1,7 @@
 ## Terminal progress bar for Go  
 
 Simple progress bar for console programms. 
-Works well on FreeBSD, Linux, MacOs.   
-Works on Windows, but have fixed width.  
+    
 
 ### Installation
 ```
