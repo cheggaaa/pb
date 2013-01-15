@@ -14,5 +14,8 @@ func bold(str string) string {
 
 func terminalWidth() (int, error) {
 	screenBufInfo := w32.GetConsoleScreenBufferInfo(w32.HANDLE(syscall.Stdout))
-	return int(screenBufInfo.DwSize.X)-1, nil
+	if screenBufInfo == nil {
+		return 79, nil
+	}
+	return int(screenBufInfo.DwSize.X) - 1, nil
 }
