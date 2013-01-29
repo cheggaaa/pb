@@ -1,6 +1,7 @@
 ## Terminal progress bar for Go  
 
-Simple progress bar for console programms. Tested on Linux and Mac OSX.   
+Simple progress bar for console programms. 
+    
 
 ### Installation
 ```
