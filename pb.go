@@ -2,6 +2,7 @@ package pb
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -37,10 +38,15 @@ func StartNew(total int) (pb *ProgressBar) {
 	return
 }
 
+type Callback func(out string)
+
 type ProgressBar struct {
 	Total                                            int64
 	RefreshRate                                      time.Duration
 	ShowPercent, ShowCounters, ShowBar, ShowTimeLeft bool
+	Output                                           io.Writer
+	Callback                                         Callback
+	NotPrint                                         bool
 	current                                          int64
 	isFinish                                         bool
 	startTime                                        time.Time
@@ -71,13 +77,15 @@ func (pb *ProgressBar) Add(add int) int {
 func (pb *ProgressBar) Finish() {
 	pb.isFinish = true
 	pb.write(atomic.LoadInt64(&pb.current))
-	fmt.Println()
+	if ! pb.NotPrint {
+		fmt.Println()
+	}
 }
 
 // End print and write string 'str'
 func (pb *ProgressBar) FinishPrint(str string) {
 	pb.Finish()
-	fmt.Println(bold(str))
+	fmt.Println(str)
 }
 
 func (pb *ProgressBar) write(current int64) {
@@ -92,7 +100,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// counters
 	if pb.ShowCounters {
-		countersBox = bold(fmt.Sprintf("%d / %d ", current, pb.Total))
+		countersBox = fmt.Sprintf("%d / %d ", current, pb.Total)
 	}
 
 	// time left
@@ -135,17 +143,17 @@ func (pb *ProgressBar) write(current int64) {
 		end = strings.Repeat(" ", width-len(out))
 	}
 
-	// bold
-	if countersBox != "" {
-		countersBox = bold(countersBox)
-	}
-	if percentBox != "" {
-		percentBox = bold(percentBox)
-	}
 	out = countersBox + barBox + percentBox + timeLeftBox
 
 	// and print!
-	fmt.Print("\r" + out + end)
+	switch {
+	case pb.Output != nil:
+		fmt.Fprint(pb.Output, out+end)
+	case pb.Callback != nil:
+		pb.Callback(out + end)
+	case ! pb.NotPrint:
+		fmt.Print("\r" + out + end)
+	}
 }
 
 func (pb *ProgressBar) writer() {
