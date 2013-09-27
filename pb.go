@@ -31,30 +31,44 @@ func New(total int) *ProgressBar {
 	}
 }
 
-// Create new object and start 
+// Create new object and start
 func StartNew(total int) (pb *ProgressBar) {
 	pb = New(total)
 	pb.Start()
 	return
 }
 
+// Callback for custom output
+// For example:
+// bar.Callback = func(s string) {
+//     mySuperPrint(s)
+// }
+//
 type Callback func(out string)
 
 type ProgressBar struct {
-	Total                                            int64
-	RefreshRate                                      time.Duration
-	ShowPercent, ShowCounters, ShowBar, ShowTimeLeft bool
-	Output                                           io.Writer
-	Callback                                         Callback
-	NotPrint                                         bool
-	current                                          int64
-	isFinish                                         bool
-	startTime                                        time.Time
+	Total                            int64
+	RefreshRate                      time.Duration
+	ShowPercent, ShowCounters        bool
+	ShowSpeed, ShowTimeLeft, ShowBar bool
+	Output                           io.Writer
+	Callback                         Callback
+	NotPrint                         bool
+	Units                            int
+
+	current   int64
+	isFinish  bool
+	startTime time.Time
 }
 
 // Start print
 func (pb *ProgressBar) Start() {
 	pb.startTime = time.Now()
+	if pb.Total == 0 {
+		pb.ShowBar = false
+		pb.ShowTimeLeft = false
+		pb.ShowPercent = false
+	}
 	go pb.writer()
 }
 
@@ -77,7 +91,7 @@ func (pb *ProgressBar) Add(add int) int {
 func (pb *ProgressBar) Finish() {
 	pb.isFinish = true
 	pb.write(atomic.LoadInt64(&pb.current))
-	if ! pb.NotPrint {
+	if !pb.NotPrint {
 		fmt.Println()
 	}
 }
@@ -88,9 +102,16 @@ func (pb *ProgressBar) FinishPrint(str string) {
 	fmt.Println(str)
 }
 
+// implement io.Writer
+func (pb *ProgressBar) Write(p []byte) (n int, err error) {
+	n = len(p)
+	pb.Add(n)
+	return
+}
+
 func (pb *ProgressBar) write(current int64) {
 	width, _ := terminalWidth()
-	var percentBox, countersBox, timeLeftBox, barBox, end, out string
+	var percentBox, countersBox, timeLeftBox, speedBox, barBox, end, out string
 
 	// percents
 	if pb.ShowPercent {
@@ -100,7 +121,11 @@ func (pb *ProgressBar) write(current int64) {
 
 	// counters
 	if pb.ShowCounters {
-		countersBox = fmt.Sprintf("%d / %d ", current, pb.Total)
+		if pb.Total > 0 {
+			countersBox = fmt.Sprintf("%s / %s ", Format(current, pb.Units), Format(pb.Total, pb.Units))
+		} else {
+			countersBox = Format(current, pb.Units) + " "
+		}
 	}
 
 	// time left
@@ -113,10 +138,17 @@ func (pb *ProgressBar) write(current int64) {
 			timeLeftBox = left.String()
 		}
 	}
-
+	
+	// speed 
+	if pb.ShowSpeed && current > 0 {
+		fromStart := time.Now().Sub(pb.startTime)
+		speed := float64(current) / (float64(fromStart) / float64(time.Second))
+		speedBox = Format(int64(speed), pb.Units) + "/s "
+	}
+	
 	// bar
 	if pb.ShowBar {
-		size := width - len(countersBox+BarStart+BarEnd+percentBox+timeLeftBox)
+		size := width - len(countersBox+BarStart+BarEnd+percentBox+timeLeftBox+speedBox)
 		if size > 0 {
 			curCount := int(float64(current) / (float64(pb.Total) / float64(size)))
 			emptCount := size - curCount
@@ -138,12 +170,12 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// check len
-	out = countersBox + barBox + percentBox + timeLeftBox
+	out = countersBox + barBox + percentBox + speedBox + timeLeftBox
 	if len(out) < width {
 		end = strings.Repeat(" ", width-len(out))
 	}
 
-	out = countersBox + barBox + percentBox + timeLeftBox
+	out = countersBox + barBox + percentBox + speedBox + timeLeftBox
 
 	// and print!
 	switch {
@@ -151,7 +183,7 @@ func (pb *ProgressBar) write(current int64) {
 		fmt.Fprint(pb.Output, out+end)
 	case pb.Callback != nil:
 		pb.Callback(out + end)
-	case ! pb.NotPrint:
+	case !pb.NotPrint:
 		fmt.Print("\r" + out + end)
 	}
 }
