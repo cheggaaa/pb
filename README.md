@@ -54,9 +54,39 @@ bar.ShowCounters = false
 // show "time left"
 bar.ShowTimeLeft = true
 
+// show average speed    
+bar.ShowSpeed = true
+
+// convert output to readable format (like KB, MB)     
+bar.Units = pb.U_BYTES
+
 // and start
 bar.Start()
-```    
+``` 
+
+Want handle progress of io operations?    
+```Go
+// create and start bar
+bar := pb.New(myDataLen)
+// for output like MB, KB
+bar.Units = pb.U_BYTES
+bar.Start()
+
+// my io.Reader
+r := myReader
+
+// my io.Writer
+w := myWriter
+
+// create multi writer
+writer := io.MultiWriter(w, bar)
+
+// and copy
+io.Copy(writer, r)
+
+// show example/copy/copy.go for advanced example
+
+```
 
 Not like the looks?
 ```Go
