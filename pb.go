@@ -109,6 +109,13 @@ func (pb *ProgressBar) Write(p []byte) (n int, err error) {
 	return
 }
 
+// implement io.Reader
+func (pb *ProgressBar) Read(p []byte) (n int, err error) {
+	n = len(p)
+	pb.Add(n)
+	return
+}
+
 func (pb *ProgressBar) write(current int64) {
 	width, _ := terminalWidth()
 	var percentBox, countersBox, timeLeftBox, speedBox, barBox, end, out string
