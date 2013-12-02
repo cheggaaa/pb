@@ -47,6 +47,8 @@ func StartNew(total int) (pb *ProgressBar) {
 type Callback func(out string)
 
 type ProgressBar struct {
+	current int64 // current must be first member of struct (https://code.google.com/p/go/issues/detail?id=5278)
+
 	Total                            int64
 	RefreshRate                      time.Duration
 	ShowPercent, ShowCounters        bool
@@ -56,7 +58,6 @@ type ProgressBar struct {
 	NotPrint                         bool
 	Units                            int
 
-	current   int64
 	isFinish  bool
 	startTime time.Time
 }
