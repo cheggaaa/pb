@@ -199,6 +199,7 @@ func (pb *ProgressBar) write(current int64) {
 
 func (pb *ProgressBar) writer() {
 	var c, oc int64
+	oc = -1
 	for {
 		if pb.isFinish {
 			break
