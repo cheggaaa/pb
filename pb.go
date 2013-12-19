@@ -3,6 +3,7 @@ package pb
 import (
 	"fmt"
 	"io"
+	"math"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -146,19 +147,19 @@ func (pb *ProgressBar) write(current int64) {
 			timeLeftBox = left.String()
 		}
 	}
-	
-	// speed 
+
+	// speed
 	if pb.ShowSpeed && current > 0 {
 		fromStart := time.Now().Sub(pb.startTime)
 		speed := float64(current) / (float64(fromStart) / float64(time.Second))
 		speedBox = Format(int64(speed), pb.Units) + "/s "
 	}
-	
+
 	// bar
 	if pb.ShowBar {
 		size := width - len(countersBox+BarStart+BarEnd+percentBox+timeLeftBox+speedBox)
 		if size > 0 {
-			curCount := int(float64(current) / (float64(pb.Total) / float64(size)))
+			curCount := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
 			emptCount := size - curCount
 			barBox = BarStart
 			if emptCount < 0 {
