@@ -58,7 +58,7 @@ bar.ShowTimeLeft = true
 bar.ShowSpeed = true
 
 // convert output to readable format (like KB, MB)     
-bar.Units = pb.U_BYTES
+bar.SetUnits(pb.U_BYTES)
 
 // and start
 bar.Start()
