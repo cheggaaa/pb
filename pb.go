@@ -12,29 +12,29 @@ import (
 const (
 	// Default refresh rate - 200ms
 	DEFAULT_REFRESH_RATE = time.Millisecond * 200
+	FORMAT               = "[=>-]"
+)
 
-	BAR_START = "["
-	BAR_END   = "]"
-	EMPTY    = "_"
-	CURRENT  = "="
-	CURRENT_N = ">"
+// DEPRECATED
+// variables for backward compatibility, from now do not work
+// use pb.Format and pb.SetRefreshRate
+var (
+	DefaultRefreshRate                         = DEFAULT_REFRESH_RATE
+	BarStart, BarEnd, Empty, Current, CurrentN string
 )
 
 // Create new progress bar object
-func New(total int) *ProgressBar {
-	return &ProgressBar{
+func New(total int) (pb *ProgressBar) {
+	pb = &ProgressBar{
 		Total:        int64(total),
 		RefreshRate:  DEFAULT_REFRESH_RATE,
 		ShowPercent:  true,
 		ShowCounters: true,
 		ShowBar:      true,
 		ShowTimeLeft: true,
-		BarStart:     BAR_START,
-		BarEnd:       BAR_END,
-		Empty:        EMPTY,
-		Current:      CURRENT,
-		CurrentN:     CURRENT_N,
 	}
+	pb.Format(FORMAT)
+	return
 }
 
 // Create new object and start
@@ -67,11 +67,11 @@ type ProgressBar struct {
 	isFinish  bool
 	startTime time.Time
 
-	BarStart                         string
-	BarEnd                           string
-	Empty                            string
-	Current                          string
-	CurrentN                         string
+	BarStart string
+	BarEnd   string
+	Empty    string
+	Current  string
+	CurrentN string
 }
 
 // Start print
@@ -100,15 +100,40 @@ func (pb *ProgressBar) Add(add int) int {
 	return int(atomic.AddInt64(&pb.current, int64(add)))
 }
 
-func (pb *ProgressBar) Format(BarStart string, Current string, CurrentN string,
-	                            Empty string, BarEnd string) {
-	pb.BarStart = BarStart
-	pb.BarEnd = BarEnd
-	pb.Empty = Empty
-	pb.Current = Current
-	pb.CurrentN = CurrentN
+// Set custom format for bar
+// Example: bar.Format("[=>_]")
+func (pb *ProgressBar) Format(format string) (bar *ProgressBar) {
+	bar = pb
+	formatEntries := strings.Split(format, "")
+	if len(formatEntries) != 5 {
+		return
+	}
+	pb.BarStart = formatEntries[0]
+	pb.BarEnd = formatEntries[4]
+	pb.Empty = formatEntries[3]
+	pb.Current = formatEntries[1]
+	pb.CurrentN = formatEntries[2]
+	return
 }
 
+// Set bar refresh rate
+func (pb *ProgressBar) SetRefreshRate(rate time.Duration) (bar *ProgressBar) {
+	bar = pb
+	pb.RefreshRate = rate
+	return
+}
+
+// Set units
+// bar.SetUnits(U_NO) - by default
+// bar.SetUnits(U_BYTES) - for Mb, Kb, etc
+func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
+	bar = pb
+	switch units {
+		case U_NO, U_BYTES:
+			pb.Units = units
+	}
+	return
+}
 
 // End print
 func (pb *ProgressBar) Finish() {

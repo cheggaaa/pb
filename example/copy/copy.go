@@ -39,19 +39,20 @@ func main() {
 		source = resp.Body
 	} else {
 		// open as file
-		source, err := os.Open(sourceName)
+		s, err := os.Open(sourceName)
 		if err != nil {
 			fmt.Printf("Can't open %s: %v\n", sourceName, err)
 			return
 		}
-		defer source.Close()
+		defer s.Close()
 		// get source size
-		sourceStat, err := source.Stat()
+		sourceStat, err := s.Stat()
 		if err != nil {
 			fmt.Printf("Can't stat %s: %v\n", sourceName, err)
 			return
 		}
 		sourceSize = sourceStat.Size()
+		source = s
 	}
 	
 	
@@ -65,10 +66,8 @@ func main() {
 	defer dest.Close()
 	
 	// create bar	
-	bar := pb.New(int(sourceSize))
+	bar := pb.New(int(sourceSize)).SetUnits(pb.U_BYTES).SetRefreshRate(time.Millisecond * 10)
 	bar.ShowSpeed = true
-	bar.RefreshRate = time.Millisecond * 20
-	bar.Units = pb.U_BYTES
 	bar.Start()
 	
 	// create multi writer
