@@ -40,7 +40,7 @@ More functions?
 bar := pb.New(count)
 
 // refresh info every second (default 200ms)
-bar.RefreshRate = time.Second
+bar.SetRefreshRate(time.Second)
 
 // show percents (by default already true)
 bar.ShowPercent = true
@@ -67,9 +67,7 @@ bar.Start()
 Want handle progress of io operations?    
 ```Go
 // create and start bar
-bar := pb.New(myDataLen)
-// for output like MB, KB
-bar.Units = pb.U_BYTES
+bar := pb.New(myDataLen).SetUnits(pb.U_BYTES)
 bar.Start()
 
 // my io.Reader
@@ -90,10 +88,5 @@ io.Copy(writer, r)
 
 Not like the looks?
 ```Go
-// insert before usage
-pb.BarStart = "<"
-pb.BarEnd   = ">"
-pb.Empty    = " "
-pb.Current  = "-"
-pb.CurrentN = "."
+bar.Format("<.- >")
 ```
