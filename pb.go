@@ -9,26 +9,31 @@ import (
 	"time"
 )
 
-var (
+const (
 	// Default refresh rate - 200ms
-	DefaultRefreshRate = time.Millisecond * 200
+	DEFAULT_REFRESH_RATE = time.Millisecond * 200
 
-	BarStart = "["
-	BarEnd   = "]"
-	Empty    = "_"
-	Current  = "="
-	CurrentN = ">"
+	BAR_START = "["
+	BAR_END   = "]"
+	EMPTY    = "_"
+	CURRENT  = "="
+	CURRENT_N = ">"
 )
 
 // Create new progress bar object
 func New(total int) *ProgressBar {
 	return &ProgressBar{
 		Total:        int64(total),
-		RefreshRate:  DefaultRefreshRate,
+		RefreshRate:  DEFAULT_REFRESH_RATE,
 		ShowPercent:  true,
 		ShowCounters: true,
 		ShowBar:      true,
 		ShowTimeLeft: true,
+		BarStart:     BAR_START,
+		BarEnd:       BAR_END,
+		Empty:        EMPTY,
+		Current:      CURRENT,
+		CurrentN:     CURRENT_N,
 	}
 }
 
@@ -61,6 +66,12 @@ type ProgressBar struct {
 
 	isFinish  bool
 	startTime time.Time
+
+	BarStart                         string
+	BarEnd                           string
+	Empty                            string
+	Current                          string
+	CurrentN                         string
 }
 
 // Start print
@@ -88,6 +99,16 @@ func (pb *ProgressBar) Set(current int) {
 func (pb *ProgressBar) Add(add int) int {
 	return int(atomic.AddInt64(&pb.current, int64(add)))
 }
+
+func (pb *ProgressBar) Format(BarStart string, Current string, CurrentN string,
+	                            Empty string, BarEnd string) {
+	pb.BarStart = BarStart
+	pb.BarEnd = BarEnd
+	pb.Empty = Empty
+	pb.Current = Current
+	pb.CurrentN = CurrentN
+}
+
 
 // End print
 func (pb *ProgressBar) Finish() {
@@ -157,11 +178,11 @@ func (pb *ProgressBar) write(current int64) {
 
 	// bar
 	if pb.ShowBar {
-		size := width - len(countersBox+BarStart+BarEnd+percentBox+timeLeftBox+speedBox)
+		size := width - len(countersBox+pb.BarStart+pb.BarEnd+percentBox+timeLeftBox+speedBox)
 		if size > 0 {
 			curCount := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
 			emptCount := size - curCount
-			barBox = BarStart
+			barBox = pb.BarStart
 			if emptCount < 0 {
 				emptCount = 0
 			}
@@ -169,12 +190,12 @@ func (pb *ProgressBar) write(current int64) {
 				curCount = size
 			}
 			if emptCount <= 0 {
-				barBox += strings.Repeat(Current, curCount)
+				barBox += strings.Repeat(pb.Current, curCount)
 			} else if curCount > 0 {
-				barBox += strings.Repeat(Current, curCount-1) + CurrentN
+				barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
 			}
 
-			barBox += strings.Repeat(Empty, emptCount) + BarEnd
+			barBox += strings.Repeat(pb.Empty, emptCount) + pb.BarEnd
 		}
 	}
 
