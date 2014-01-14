@@ -39,19 +39,21 @@ func main() {
 		source = resp.Body
 	} else {
 		// open as file
-		source, err := os.Open(sourceName)
+		file, err := os.Open(sourceName)
 		if err != nil {
 			fmt.Printf("Can't open %s: %v\n", sourceName, err)
 			return
 		}
-		defer source.Close()
+		defer file.Close()
 		// get source size
-		sourceStat, err := source.Stat()
+		sourceStat, err := file.Stat()
 		if err != nil {
 			fmt.Printf("Can't stat %s: %v\n", sourceName, err)
 			return
 		}
 		sourceSize = sourceStat.Size()
+
+		source = file
 	}
 
 	// create dest
