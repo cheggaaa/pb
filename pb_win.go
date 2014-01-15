@@ -3,9 +3,7 @@
 package pb
 
 import (
-	"syscall"
-
-	"github.com/AllenDang/w32"
+	"github.com/olekukonko/ts"
 )
 
 func bold(str string) string {
@@ -13,9 +11,6 @@ func bold(str string) string {
 }
 
 func terminalWidth() (int, error) {
-	screenBufInfo := w32.GetConsoleScreenBufferInfo(w32.HANDLE(syscall.Stdout))
-	if screenBufInfo == nil {
-		return 79, nil
-	}
-	return int(screenBufInfo.DwSize.X) - 1, nil
+	size , err := ts.GetSize()
+	return size.Col() , err
 }
