@@ -11,6 +11,6 @@ func bold(str string) string {
 }
 
 func terminalWidth() (int, error) {
-	size , err := ts.GetSize()
-	return size.Col() , err
+	size, err := ts.GetSize()
+	return size.Col(), err
 }
