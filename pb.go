@@ -129,8 +129,8 @@ func (pb *ProgressBar) SetRefreshRate(rate time.Duration) (bar *ProgressBar) {
 func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
 	bar = pb
 	switch units {
-		case U_NO, U_BYTES:
-			pb.Units = units
+	case U_NO, U_BYTES:
+		pb.Units = units
 	}
 	return
 }
