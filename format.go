@@ -25,7 +25,7 @@ func Format(i int64, units int) string {
 }
 
 
-// Convert bytes to human readable string. Like a 2 MiB, 64.2 KiB, 52 B
+// Convert bytes to human readable string. Like a 2 MB, 64.2 KB, 52 B
 func FormatBytes(i int64) (result string) {
 	switch {
 	case i > (1024 * 1024 * 1024 * 1024):
