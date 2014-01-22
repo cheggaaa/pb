@@ -164,6 +164,11 @@ func (pb *ProgressBar) Read(p []byte) (n int, err error) {
 	return
 }
 
+// Create new proxy reader over bar
+func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
+	return &Reader{r, pb}
+}
+
 func (pb *ProgressBar) write(current int64) {
 	width, _ := terminalWidth()
 	var percentBox, countersBox, timeLeftBox, speedBox, barBox, end, out string
