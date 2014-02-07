@@ -129,8 +129,8 @@ func (pb *ProgressBar) SetRefreshRate(rate time.Duration) (bar *ProgressBar) {
 func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
 	bar = pb
 	switch units {
-		case U_NO, U_BYTES:
-			pb.Units = units
+	case U_NO, U_BYTES:
+		pb.Units = units
 	}
 	return
 }
@@ -214,12 +214,7 @@ func (pb *ProgressBar) write(current int64) {
 			if curCount > size {
 				curCount = size
 			}
-			if emptCount <= 0 {
-				barBox += strings.Repeat(pb.Current, curCount)
-			} else if curCount > 0 {
-				barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
-			}
-
+			barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
 			barBox += strings.Repeat(pb.Empty, emptCount) + pb.BarEnd
 		}
 	}
