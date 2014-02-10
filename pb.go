@@ -219,12 +219,7 @@ func (pb *ProgressBar) write(current int64) {
 			if curCount > size {
 				curCount = size
 			}
-			if emptCount <= 0 {
-				barBox += strings.Repeat(pb.Current, curCount)
-			} else if curCount > 0 {
-				barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
-			}
-
+			barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
 			barBox += strings.Repeat(pb.Empty, emptCount) + pb.BarEnd
 		}
 	}
