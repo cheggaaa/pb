@@ -240,7 +240,7 @@ func (pb *ProgressBar) write(current int64) {
 	// and print!
 	switch {
 	case pb.Output != nil:
-		fmt.Fprint(pb.Output, out+end)
+		fmt.Fprint(pb.Output, "\r"+out+end)
 	case pb.Callback != nil:
 		pb.Callback(out + end)
 	case !pb.NotPrint:
