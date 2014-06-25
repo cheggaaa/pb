@@ -1,4 +1,5 @@
 // +build !windows !solaris
+
 package pb
 
 import "syscall"
