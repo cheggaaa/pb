@@ -2,4 +2,6 @@
 
 package pb
 
-const sys_ioctl = 16
+import "syscall"
+
+const sys_ioctl = syscall.SYS_IOCTL
