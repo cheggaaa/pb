@@ -72,6 +72,8 @@ type ProgressBar struct {
 	isFinish  bool
 	startTime time.Time
 
+	prefix, postfix string
+
 	BarStart string
 	BarEnd   string
 	Empty    string
@@ -103,6 +105,18 @@ func (pb *ProgressBar) Set(current int) {
 // Add to current value
 func (pb *ProgressBar) Add(add int) int {
 	return int(atomic.AddInt64(&pb.current, int64(add)))
+}
+
+// Set prefix string
+func (pb *ProgressBar) Prefix(prefix string) (bar *ProgressBar) {
+	pb.prefix = prefix
+	return pb
+}
+
+// Set postfix string
+func (pb *ProgressBar) Postfix(postfix string) (bar *ProgressBar) {
+	pb.postfix = postfix
+	return pb
 }
 
 // Set custom format for bar
@@ -213,7 +227,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// bar
 	if pb.ShowBar {
-		size := width - len(countersBox+pb.BarStart+pb.BarEnd+percentBox+timeLeftBox+speedBox)
+		size := width - len(countersBox+pb.BarStart+pb.BarEnd+percentBox+timeLeftBox+speedBox+pb.prefix+pb.postfix)
 		if size > 0 {
 			curCount := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
 			emptCount := size - curCount
@@ -235,12 +249,10 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// check len
-	out = countersBox + barBox + percentBox + speedBox + timeLeftBox
+	out = pb.prefix + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
 	if len(out) < width {
 		end = strings.Repeat(" ", width-len(out))
 	}
-
-	out = countersBox + barBox + percentBox + speedBox + timeLeftBox
 
 	// and print!
 	switch {
