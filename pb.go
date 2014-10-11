@@ -164,8 +164,8 @@ func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
 	return
 }
 
-// Force the width
-func (pb *ProgressBar) ForceWidth(width int) (bar *ProgressBar) {
+// Set force width
+func (pb *ProgressBar) SetForceWidth(width int) (bar *ProgressBar) {
 	bar = pb
 	pb.Width = width
 	pb.ForceWidth = true
