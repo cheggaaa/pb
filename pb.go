@@ -68,6 +68,8 @@ type ProgressBar struct {
 	Callback                         Callback
 	NotPrint                         bool
 	Units                            int
+	Width                            int
+	ForceWidth                       bool
 
 	isFinish  bool
 	startTime time.Time
@@ -154,6 +156,21 @@ func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
 	return
 }
 
+// Set width, if width is bigger than terminal width, will be ignored
+func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
+	bar = pb
+	pb.Width = width
+	return
+}
+
+// Forze the width
+func (pb *ProgressBar) ForzeWidth(width int) (bar *ProgressBar) {
+	bar = pb
+	pb.Width = width
+	pb.ForceWidth = true
+	return
+}
+
 // End print
 func (pb *ProgressBar) Finish() {
 	pb.isFinish = true
@@ -189,7 +206,8 @@ func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 }
 
 func (pb *ProgressBar) write(current int64) {
-	width, _ := terminalWidth()
+	width := pb.getWidth()
+
 	var percentBox, countersBox, timeLeftBox, speedBox, barBox, end, out string
 
 	// percents
@@ -263,6 +281,20 @@ func (pb *ProgressBar) write(current int64) {
 	case !pb.NotPrint:
 		fmt.Print("\r" + out + end)
 	}
+}
+
+func (pb *ProgressBar) getWidth() int {
+	if pb.ForceWidth {
+		return pb.Width
+	}
+
+	width := pb.Width
+	termWidth, _ := terminalWidth()
+	if width == 0 || termWidth <= width {
+		width = termWidth
+	}
+
+	return width
 }
 
 func (pb *ProgressBar) writer() {
