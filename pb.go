@@ -160,11 +160,12 @@ func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
 func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
 	bar = pb
 	pb.Width = width
+	pb.ForceWidth = false
 	return
 }
 
-// Forze the width
-func (pb *ProgressBar) ForzeWidth(width int) (bar *ProgressBar) {
+// Force the width
+func (pb *ProgressBar) ForceWidth(width int) (bar *ProgressBar) {
 	bar = pb
 	pb.Width = width
 	pb.ForceWidth = true
