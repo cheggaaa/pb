@@ -69,6 +69,7 @@ type ProgressBar struct {
 	NotPrint                         bool
 	Units                            int
 	Width                            int
+	ForceWidth                       bool
 
 	isFinish  bool
 	startTime time.Time
@@ -159,6 +160,14 @@ func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
 func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
 	bar = pb
 	pb.Width = width
+	return
+}
+
+// Forze the width
+func (pb *ProgressBar) ForzeWidth(width int) (bar *ProgressBar) {
+	bar = pb
+	pb.Width = width
+	pb.ForceWidth = true
 	return
 }
 
@@ -275,6 +284,10 @@ func (pb *ProgressBar) write(current int64) {
 }
 
 func (pb *ProgressBar) getWidth() int {
+	if pb.ForceWidth {
+		return pb.Width
+	}
+
 	width := pb.Width
 	termWidth, _ := terminalWidth()
 	if width == 0 || termWidth <= width {
