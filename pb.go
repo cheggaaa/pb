@@ -156,16 +156,16 @@ func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
 	return
 }
 
-// Set width, if width is bigger than terminal width, will be ignored
-func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
+// Set max width, if width is bigger than terminal width, will be ignored
+func (pb *ProgressBar) SetMaxWidth(width int) (bar *ProgressBar) {
 	bar = pb
 	pb.Width = width
 	pb.ForceWidth = false
 	return
 }
 
-// Set force width
-func (pb *ProgressBar) SetForceWidth(width int) (bar *ProgressBar) {
+// Set bar width
+func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
 	bar = pb
 	pb.Width = width
 	pb.ForceWidth = true
