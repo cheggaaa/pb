@@ -3,6 +3,7 @@
 package pb
 
 import (
+	"os"
 	"runtime"
 	"syscall"
 	"unsafe"
@@ -23,8 +24,18 @@ func terminalWidth() (int, error) {
 	if runtime.GOOS == "darwin" {
 		tio = TIOCGWINSZ_OSX
 	}
+
+	var ttyFd uintptr
+	tty, e := os.Open("/dev/tty")
+	if e != nil {
+		ttyFd = os.Stdin.Fd()
+	} else {
+		ttyFd = tty.Fd()
+		defer tty.Close()
+	}
+
 	res, _, err := syscall.Syscall(sys_ioctl,
-		uintptr(syscall.Stdin),
+		ttyFd,
 		uintptr(tio),
 		uintptr(unsafe.Pointer(w)),
 	)
