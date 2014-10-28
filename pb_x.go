@@ -14,6 +14,17 @@ const (
 	TIOCGWINSZ_OSX = 1074295912
 )
 
+var ttyFd uintptr
+
+func init() {
+	tty, e := os.Open("/dev/tty")
+	if e != nil {
+		ttyFd = uintptr(syscall.Stdin)
+	} else {
+		ttyFd = tty.Fd()
+	}
+}
+
 func bold(str string) string {
 	return "\033[1m" + str + "\033[0m"
 }
@@ -24,16 +35,6 @@ func terminalWidth() (int, error) {
 	if runtime.GOOS == "darwin" {
 		tio = TIOCGWINSZ_OSX
 	}
-
-	var ttyFd uintptr
-	tty, e := os.Open("/dev/tty")
-	if e != nil {
-		ttyFd = os.Stdin.Fd()
-	} else {
-		ttyFd = tty.Fd()
-		defer tty.Close()
-	}
-
 	res, _, err := syscall.Syscall(sys_ioctl,
 		ttyFd,
 		uintptr(tio),
