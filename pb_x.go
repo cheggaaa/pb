@@ -14,14 +14,13 @@ const (
 	TIOCGWINSZ_OSX = 1074295912
 )
 
-var ttyFd uintptr
+var tty *os.File
 
 func init() {
-	tty, e := os.Open("/dev/tty")
-	if e != nil {
-		ttyFd = uintptr(syscall.Stdin)
-	} else {
-		ttyFd = tty.Fd()
+	var err error
+	tty, err = os.Open("/dev/tty")
+	if err != nil {
+		tty = os.Stdin
 	}
 }
 
@@ -36,7 +35,7 @@ func terminalWidth() (int, error) {
 		tio = TIOCGWINSZ_OSX
 	}
 	res, _, err := syscall.Syscall(sys_ioctl,
-		ttyFd,
+		tty.Fd(),
 		uintptr(tio),
 		uintptr(unsafe.Pointer(w)),
 	)
