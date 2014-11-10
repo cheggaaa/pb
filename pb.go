@@ -31,12 +31,13 @@ func New(total int) (pb *ProgressBar) {
 // Create new progress bar object uding int64 as total
 func New64(total int64) (pb *ProgressBar) {
 	pb = &ProgressBar{
-		Total:        total,
-		RefreshRate:  DEFAULT_REFRESH_RATE,
-		ShowPercent:  true,
-		ShowCounters: true,
-		ShowBar:      true,
-		ShowTimeLeft: true,
+		Total:         total,
+		RefreshRate:   DEFAULT_REFRESH_RATE,
+		ShowPercent:   true,
+		ShowCounters:  true,
+		ShowBar:       true,
+		ShowTimeLeft:  true,
+		ShowFinalTime: true,
 	}
 	pb.Format(FORMAT)
 	return
@@ -64,6 +65,7 @@ type ProgressBar struct {
 	RefreshRate                      time.Duration
 	ShowPercent, ShowCounters        bool
 	ShowSpeed, ShowTimeLeft, ShowBar bool
+	ShowFinalTime                    bool
 	Output                           io.Writer
 	Callback                         Callback
 	NotPrint                         bool
@@ -227,14 +229,17 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// time left
-	if pb.ShowTimeLeft && current > 0 {
-		fromStart := time.Now().Sub(pb.startTime)
+	fromStart := time.Now().Sub(pb.startTime)
+	if pb.isFinish {
+		if pb.ShowFinalTime {
+			left := (fromStart / time.Second) * time.Second
+			timeLeftBox = left.String()
+		}
+	} else if pb.ShowTimeLeft && current > 0 {
 		perEntry := fromStart / time.Duration(current)
 		left := time.Duration(pb.Total-current) * perEntry
 		left = (left / time.Second) * time.Second
-		if left > 0 {
-			timeLeftBox = left.String()
-		}
+		timeLeftBox = left.String()
 	}
 
 	// speed
