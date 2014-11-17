@@ -38,6 +38,8 @@ func New64(total int64) (pb *ProgressBar) {
 		ShowBar:       true,
 		ShowTimeLeft:  true,
 		ShowFinalTime: true,
+		ManualUpdate:  false,
+		currentValue:  -1,
 	}
 	pb.Format(FORMAT)
 	return
@@ -72,9 +74,11 @@ type ProgressBar struct {
 	Units                            int
 	Width                            int
 	ForceWidth                       bool
+	ManualUpdate                     bool
 
-	isFinish  bool
-	startTime time.Time
+	isFinish     bool
+	startTime    time.Time
+	currentValue int64
 
 	prefix, postfix string
 
@@ -93,7 +97,9 @@ func (pb *ProgressBar) Start() {
 		pb.ShowTimeLeft = false
 		pb.ShowPercent = false
 	}
-	go pb.writer()
+	if !pb.ManualUpdate {
+		go pb.writer()
+	}
 }
 
 // Increment current value
@@ -303,18 +309,22 @@ func (pb *ProgressBar) getWidth() int {
 	return width
 }
 
+// Write the current state of the progressbar
+func (pb *ProgressBar) Update() {
+	c := atomic.LoadInt64(&pb.current)
+	if c != pb.currentValue {
+		pb.write(c)
+		pb.currentValue = c
+	}
+}
+
+// Internal loop for writing progressbar
 func (pb *ProgressBar) writer() {
-	var c, oc int64
-	oc = -1
 	for {
 		if pb.isFinish {
 			break
 		}
-		c = atomic.LoadInt64(&pb.current)
-		if c != oc {
-			pb.write(c)
-			oc = c
-		}
+		pb.Update()
 		time.Sleep(pb.RefreshRate)
 	}
 }
