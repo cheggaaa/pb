@@ -117,6 +117,10 @@ func (pb *ProgressBar) Add(add int) int {
 	return int(atomic.AddInt64(&pb.current, int64(add)))
 }
 
+func (pb *ProgressBar) Add64(add int64) int64 {
+	return atomic.AddInt64(&pb.current, add)
+}
+
 // Set prefix string
 func (pb *ProgressBar) Prefix(prefix string) (bar *ProgressBar) {
 	pb.prefix = prefix
