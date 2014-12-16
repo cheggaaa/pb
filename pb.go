@@ -81,6 +81,8 @@ type ProgressBar struct {
 	currentValue int64
 
 	prefix, postfix string
+	
+	lastPrint string
 
 	BarStart string
 	BarEnd   string
@@ -287,8 +289,9 @@ func (pb *ProgressBar) write(current int64) {
 	if len(out) < width {
 		end = strings.Repeat(" ", width-len(out))
 	}
-
+	
 	// and print!
+	pb.lastPrint = out+end
 	switch {
 	case pb.Output != nil:
 		fmt.Fprint(pb.Output, "\r"+out+end)
@@ -320,6 +323,10 @@ func (pb *ProgressBar) Update() {
 		pb.write(c)
 		pb.currentValue = c
 	}
+}
+
+func (pb *ProgressBar) String() string {
+	return pb.lastPrint
 }
 
 // Internal loop for writing progressbar
