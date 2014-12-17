@@ -1,14 +1,16 @@
-## Terminal progress bar for Go  
+# Terminal progress bar for Go  
 
-Simple progress bar for console programms. 
+Simple progress bar for console programs. 
     
 
-### Installation
+## Installation
+
 ```
 go get github.com/cheggaaa/pb
 ```   
 
-### Usage   
+## Usage   
+
 ```Go
 package main
 
@@ -26,15 +28,18 @@ func main() {
 	}
 	bar.FinishPrint("The End!")
 }
-```   
+
+```
+
 Result will be like this:
+
 ```
 > go run test.go
 37158 / 100000 [================>_______________________________] 37.16% 1m11s
 ```
 
+## Customization
 
-More functions?  
 ```Go  
 // create bar
 bar := pb.New(count)
@@ -48,30 +53,31 @@ bar.ShowPercent = true
 // show bar (by default already true)
 bar.ShowBar = true
 
-// no need counters
+// no counters
 bar.ShowCounters = false
 
 // show "time left"
 bar.ShowTimeLeft = true
 
-// show average speed    
+// show average speed
 bar.ShowSpeed = true
 
 // sets the width of the progress bar
 bar.SetWith(80)
 
-// sets the width of the progress bar, but if terminal size smaller will be ignored
+// sets the width of the progress bar, but if the terminal size is smaller, it will be ignored
 bar.SetMaxWith(80)
 
-// convert output to readable format (like KB, MB)     
+// convert output to readable format (like KB, MB)
 bar.SetUnits(pb.U_BYTES)
 
 // and start
 bar.Start()
 ``` 
 
-Want handle progress of io operations?    
-```Go
+## Progress bar for IO Operations
+
+```go
 // create and start bar
 bar := pb.New(myDataLen).SetUnits(pb.U_BYTES)
 bar.Start()
@@ -89,10 +95,53 @@ writer := io.MultiWriter(w, bar)
 io.Copy(writer, r)
 
 // show example/copy/copy.go for advanced example
-
 ```
 
-Not like the looks?
-```Go
+## Custom Progress Bar Look-and-feel
+
+```go
 bar.Format("<.- >")
+```
+
+## Multiple Progress Bars
+
+```go
+package main
+
+import (
+    "math/rand"
+    "github.com/cheggaaa/pb"    
+    "sync"
+    "time"
+)
+
+func main() {
+    pool := &pb.Pool{}
+    first := pb.New(1000).Prefix("First ")
+    second := pb.New(1000).Prefix("Second ")
+    third := pb.New(1000).Prefix("Third ")
+    pool.Add(first, second, third)
+    pool.Start()
+    wg := new(sync.WaitGroup)
+    for _, bar := range []*pb.ProgressBar{first, second, third} {
+        wg.Add(1)
+        go func(cb *pb.ProgressBar) {
+            for n := 0; n < 1000; n++ {
+                cb.Increment()
+                time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+            }
+            cb.Finish()
+            wg.Done()
+        }(bar)
+    }
+    wg.Wait()
+```
+
+The result will be as follows:
+
+```
+$ go run example/multiple.go 
+First 141 / 1000 [===============>---------------------------------------] 14.10 % 44s
+Second 139 / 1000 [==============>---------------------------------------] 13.90 % 44s
+Third 152 / 1000 [================>--------------------------------------] 15.20 % 40s
 ```
