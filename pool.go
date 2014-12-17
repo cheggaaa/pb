@@ -2,6 +2,7 @@ package pb
 
 import (
 	"fmt"
+	"golang.org/x/crypto/ssh/terminal"
 	"time"
 )
 
@@ -27,9 +28,13 @@ func (p *Pool) Start() {
 func (p *Pool) writer() {
 	var first = true
 	var out string
+	if oldState, err := terminal.MakeRaw(0); err != nil {
+		panic(err)
+	} else {
+		defer terminal.Restore(0, oldState)
+	}
 	for {
 		if first {
-			out = ""
 			first = false
 		} else {
 			out = fmt.Sprintf("\033[%dA", len(p.bars))
