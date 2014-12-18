@@ -2,14 +2,12 @@ package pb
 
 import (
 	"fmt"
-	"os"
 	"time"
 )
 
 type Pool struct {
 	RefreshRate time.Duration
 	bars        []*ProgressBar
-	process     *os.Process
 	isFinished  bool
 }
 
