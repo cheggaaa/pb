@@ -2,13 +2,15 @@ package pb
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh/terminal"
+	"os"
 	"time"
 )
 
 type Pool struct {
 	RefreshRate time.Duration
 	bars        []*ProgressBar
+	process     *os.Process
+	isFinished  bool
 }
 
 func (p *Pool) Add(pbs ...*ProgressBar) {
@@ -20,19 +22,20 @@ func (p *Pool) Add(pbs ...*ProgressBar) {
 	}
 }
 
-func (p *Pool) Start() {
+func (p *Pool) Start() (err error) {
 	p.RefreshRate = DefaultRefreshRate
-	go p.writer()
+	quit, err := lockEcho()
+	if err != nil {
+		return
+	}
+	go p.writer(quit)
+	return
 }
 
-func (p *Pool) writer() {
+func (p *Pool) writer(finish chan int) {
 	var first = true
 	var out string
-	if oldState, err := terminal.MakeRaw(0); err != nil {
-		panic(err)
-	} else {
-		defer terminal.Restore(0, oldState)
-	}
+
 	for {
 		if first {
 			first = false
@@ -49,6 +52,8 @@ func (p *Pool) writer() {
 		}
 		fmt.Print(out)
 		if isFinished {
+			p.isFinished = true
+			finish <- 1
 			return
 		}
 		time.Sleep(p.RefreshRate)
