@@ -76,7 +76,7 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
-	isFinish     bool
+	isFinish     int32
 	startTime    time.Time
 	currentValue int64
 
@@ -186,7 +186,7 @@ func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
 
 // End print
 func (pb *ProgressBar) Finish() {
-	pb.isFinish = true
+	atomic.StoreInt32(&pb.isFinish, 1)
 	pb.write(atomic.LoadInt64(&pb.current))
 	if !pb.NotPrint {
 		fmt.Println()
@@ -240,7 +240,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// time left
 	fromStart := time.Now().Sub(pb.startTime)
-	if pb.isFinish {
+	if atomic.LoadInt32(&pb.isFinish) != 0 {
 		if pb.ShowFinalTime {
 			left := (fromStart / time.Second) * time.Second
 			timeLeftBox = left.String()
@@ -325,7 +325,7 @@ func (pb *ProgressBar) Update() {
 // Internal loop for writing progressbar
 func (pb *ProgressBar) writer() {
 	for {
-		if pb.isFinish {
+		if atomic.LoadInt32(&pb.isFinish) != 0 {
 			break
 		}
 		pb.Update()
