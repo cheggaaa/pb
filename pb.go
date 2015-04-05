@@ -24,13 +24,13 @@ var (
 )
 
 // Create new progress bar object
-func New(total int) (pb *ProgressBar) {
+func New(total int) *ProgressBar {
 	return New64(int64(total))
 }
 
 // Create new progress bar object uding int64 as total
-func New64(total int64) (pb *ProgressBar) {
-	pb = &ProgressBar{
+func New64(total int64) *ProgressBar {
+	pb := &ProgressBar{
 		Total:         total,
 		RefreshRate:   DEFAULT_REFRESH_RATE,
 		ShowPercent:   true,
@@ -41,15 +41,12 @@ func New64(total int64) (pb *ProgressBar) {
 		ManualUpdate:  false,
 		currentValue:  -1,
 	}
-	pb.Format(FORMAT)
-	return
+	return pb.Format(FORMAT)
 }
 
 // Create new object and start
-func StartNew(total int) (pb *ProgressBar) {
-	pb = New(total)
-	pb.Start()
-	return
+func StartNew(total int) *ProgressBar {
+	return New(total).Start()
 }
 
 // Callback for custom output
@@ -90,7 +87,7 @@ type ProgressBar struct {
 }
 
 // Start print
-func (pb *ProgressBar) Start() {
+func (pb *ProgressBar) Start() *ProgressBar {
 	pb.startTime = time.Now()
 	if pb.Total == 0 {
 		pb.ShowBar = false
@@ -100,6 +97,7 @@ func (pb *ProgressBar) Start() {
 	if !pb.ManualUpdate {
 		go pb.writer()
 	}
+	return pb
 }
 
 // Increment current value
@@ -122,66 +120,60 @@ func (pb *ProgressBar) Add64(add int64) int64 {
 }
 
 // Set prefix string
-func (pb *ProgressBar) Prefix(prefix string) (bar *ProgressBar) {
+func (pb *ProgressBar) Prefix(prefix string) *ProgressBar {
 	pb.prefix = prefix
 	return pb
 }
 
 // Set postfix string
-func (pb *ProgressBar) Postfix(postfix string) (bar *ProgressBar) {
+func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 	pb.postfix = postfix
 	return pb
 }
 
 // Set custom format for bar
 // Example: bar.Format("[=>_]")
-func (pb *ProgressBar) Format(format string) (bar *ProgressBar) {
-	bar = pb
+func (pb *ProgressBar) Format(format string) *ProgressBar {
 	formatEntries := strings.Split(format, "")
-	if len(formatEntries) != 5 {
-		return
+	if len(formatEntries) == 5 {
+		pb.BarStart = formatEntries[0]
+		pb.BarEnd = formatEntries[4]
+		pb.Empty = formatEntries[3]
+		pb.Current = formatEntries[1]
+		pb.CurrentN = formatEntries[2]
 	}
-	pb.BarStart = formatEntries[0]
-	pb.BarEnd = formatEntries[4]
-	pb.Empty = formatEntries[3]
-	pb.Current = formatEntries[1]
-	pb.CurrentN = formatEntries[2]
-	return
+	return pb
 }
 
 // Set bar refresh rate
-func (pb *ProgressBar) SetRefreshRate(rate time.Duration) (bar *ProgressBar) {
-	bar = pb
+func (pb *ProgressBar) SetRefreshRate(rate time.Duration) *ProgressBar {
 	pb.RefreshRate = rate
-	return
+	return pb
 }
 
 // Set units
 // bar.SetUnits(U_NO) - by default
 // bar.SetUnits(U_BYTES) - for Mb, Kb, etc
-func (pb *ProgressBar) SetUnits(units int) (bar *ProgressBar) {
-	bar = pb
+func (pb *ProgressBar) SetUnits(units int) *ProgressBar {
 	switch units {
 	case U_NO, U_BYTES:
 		pb.Units = units
 	}
-	return
+	return pb
 }
 
 // Set max width, if width is bigger than terminal width, will be ignored
-func (pb *ProgressBar) SetMaxWidth(width int) (bar *ProgressBar) {
-	bar = pb
+func (pb *ProgressBar) SetMaxWidth(width int) *ProgressBar {
 	pb.Width = width
 	pb.ForceWidth = false
-	return
+	return pb
 }
 
 // Set bar width
-func (pb *ProgressBar) SetWidth(width int) (bar *ProgressBar) {
-	bar = pb
+func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 	pb.Width = width
 	pb.ForceWidth = true
-	return
+	return pb
 }
 
 // End print
