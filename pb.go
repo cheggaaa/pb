@@ -38,6 +38,7 @@ func New64(total int64) *ProgressBar {
 		ShowBar:       true,
 		ShowTimeLeft:  true,
 		ShowFinalTime: true,
+		Units:         U_NO,
 		ManualUpdate:  false,
 		currentValue:  -1,
 	}
@@ -68,7 +69,7 @@ type ProgressBar struct {
 	Output                           io.Writer
 	Callback                         Callback
 	NotPrint                         bool
-	Units                            int
+	Units                            Units
 	Width                            int
 	ForceWidth                       bool
 	ManualUpdate                     bool
@@ -154,11 +155,8 @@ func (pb *ProgressBar) SetRefreshRate(rate time.Duration) *ProgressBar {
 // Set units
 // bar.SetUnits(U_NO) - by default
 // bar.SetUnits(U_BYTES) - for Mb, Kb, etc
-func (pb *ProgressBar) SetUnits(units int) *ProgressBar {
-	switch units {
-	case U_NO, U_BYTES:
-		pb.Units = units
-	}
+func (pb *ProgressBar) SetUnits(units Units) *ProgressBar {
+	pb.Units = units
 	return pb
 }
 
