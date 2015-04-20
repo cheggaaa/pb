@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -40,6 +41,7 @@ func New64(total int64) *ProgressBar {
 		ShowFinalTime: true,
 		Units:         U_NO,
 		ManualUpdate:  false,
+		isFinish:      make(chan struct{}),
 		currentValue:  -1,
 	}
 	return pb.Format(FORMAT)
@@ -74,7 +76,9 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
-	isFinish     int32
+	finishOnce sync.Once //Guards isFinish
+	isFinish   chan struct{}
+
 	startTime    time.Time
 	currentValue int64
 
@@ -176,11 +180,14 @@ func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 
 // End print
 func (pb *ProgressBar) Finish() {
-	atomic.StoreInt32(&pb.isFinish, 1)
-	pb.write(atomic.LoadInt64(&pb.current))
-	if !pb.NotPrint {
-		fmt.Println()
-	}
+	//Protect multiple calls
+	pb.finishOnce.Do(func() {
+		close(pb.isFinish)
+		pb.write(atomic.LoadInt64(&pb.current))
+		if !pb.NotPrint {
+			fmt.Println()
+		}
+	})
 }
 
 // End print and write string 'str'
@@ -230,16 +237,19 @@ func (pb *ProgressBar) write(current int64) {
 
 	// time left
 	fromStart := time.Now().Sub(pb.startTime)
-	if atomic.LoadInt32(&pb.isFinish) != 0 {
+	select {
+	case <-pb.isFinish:
 		if pb.ShowFinalTime {
 			left := (fromStart / time.Second) * time.Second
 			timeLeftBox = left.String()
 		}
-	} else if pb.ShowTimeLeft && current > 0 {
-		perEntry := fromStart / time.Duration(current)
-		left := time.Duration(pb.Total-current) * perEntry
-		left = (left / time.Second) * time.Second
-		timeLeftBox = left.String()
+	default:
+		if pb.ShowTimeLeft && current > 0 {
+			perEntry := fromStart / time.Duration(current)
+			left := time.Duration(pb.Total-current) * perEntry
+			left = (left / time.Second) * time.Second
+			timeLeftBox = left.String()
+		}
 	}
 
 	// speed
@@ -314,12 +324,14 @@ func (pb *ProgressBar) Update() {
 
 // Internal loop for writing progressbar
 func (pb *ProgressBar) writer() {
+	pb.Update()
 	for {
-		if atomic.LoadInt32(&pb.isFinish) != 0 {
-			break
+		select {
+		case <-pb.isFinish:
+			return
+		case <-time.After(pb.RefreshRate):
+			pb.Update()
 		}
-		pb.Update()
-		time.Sleep(pb.RefreshRate)
 	}
 }
 
