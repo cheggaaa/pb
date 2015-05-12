@@ -80,6 +80,7 @@ type ProgressBar struct {
 	isFinish   chan struct{}
 
 	startTime    time.Time
+	startValue   int64
 	currentValue int64
 
 	prefix, postfix string
@@ -99,6 +100,7 @@ func (pb *ProgressBar) Start() *ProgressBar {
 		pb.ShowTimeLeft = false
 		pb.ShowPercent = false
 	}
+	pb.startValue = pb.current
 	if !pb.ManualUpdate {
 		go pb.writer()
 	}
@@ -230,7 +232,7 @@ func (pb *ProgressBar) write(current int64) {
 		percent := float64(current) / (float64(pb.Total) / float64(100))
 		percentBox = fmt.Sprintf(" %#.02f %% ", percent)
 	}
-
+	
 	// counters
 	if pb.ShowCounters {
 		if pb.Total > 0 {
@@ -242,6 +244,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// time left
 	fromStart := time.Now().Sub(pb.startTime)
+	currentFromStart := current - pb.startValue
 	select {
 	case <-pb.isFinish:
 		if pb.ShowFinalTime {
@@ -249,18 +252,18 @@ func (pb *ProgressBar) write(current int64) {
 			timeLeftBox = left.String()
 		}
 	default:
-		if pb.ShowTimeLeft && current > 0 {
-			perEntry := fromStart / time.Duration(current)
-			left := time.Duration(pb.Total-current) * perEntry
+		if pb.ShowTimeLeft && currentFromStart > 0 {
+			perEntry := fromStart / time.Duration(currentFromStart)
+			left := time.Duration(pb.Total-currentFromStart) * perEntry
 			left = (left / time.Second) * time.Second
 			timeLeftBox = left.String()
 		}
 	}
 
 	// speed
-	if pb.ShowSpeed && current > 0 {
+	if pb.ShowSpeed && currentFromStart > 0 {
 		fromStart := time.Now().Sub(pb.startTime)
-		speed := float64(current) / (float64(fromStart) / float64(time.Second))
+		speed := float64(currentFromStart) / (float64(fromStart) / float64(time.Second))
 		speedBox = Format(int64(speed), pb.Units) + "/s "
 	}
 
