@@ -95,12 +95,12 @@ type ProgressBar struct {
 // Start print
 func (pb *ProgressBar) Start() *ProgressBar {
 	pb.startTime = time.Now()
+	pb.startValue = pb.current
 	if pb.Total == 0 {
 		pb.ShowBar = false
 		pb.ShowTimeLeft = false
 		pb.ShowPercent = false
-	}
-	pb.startValue = pb.current
+	}	
 	if !pb.ManualUpdate {
 		go pb.writer()
 	}
@@ -113,13 +113,14 @@ func (pb *ProgressBar) Increment() int {
 }
 
 // Set current value
-func (pb *ProgressBar) Set(current int) {
-	pb.Set64(int64(current))
+func (pb *ProgressBar) Set(current int) *ProgressBar {
+	return pb.Set64(int64(current))
 }
 
 // Set64 sets the current value as int64
-func (pb *ProgressBar) Set64(current int64) {
+func (pb *ProgressBar) Set64(current int64) *ProgressBar {
 	atomic.StoreInt64(&pb.current, current)
+	return pb
 }
 
 // Add to current value
