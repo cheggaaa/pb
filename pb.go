@@ -100,7 +100,7 @@ func (pb *ProgressBar) Start() *ProgressBar {
 		pb.ShowBar = false
 		pb.ShowTimeLeft = false
 		pb.ShowPercent = false
-	}	
+	}
 	if !pb.ManualUpdate {
 		go pb.writer()
 	}
@@ -233,7 +233,7 @@ func (pb *ProgressBar) write(current int64) {
 		percent := float64(current) / (float64(pb.Total) / float64(100))
 		percentBox = fmt.Sprintf(" %#.02f %% ", percent)
 	}
-	
+
 	// counters
 	if pb.ShowCounters {
 		if pb.Total > 0 {
