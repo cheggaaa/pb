@@ -223,7 +223,7 @@ func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 }
 
 func (pb *ProgressBar) write(current int64) {
-	width := pb.getWidth()
+	width := pb.GetWidth()
 
 	var percentBox, countersBox, timeLeftBox, speedBox, barBox, end, out string
 
@@ -321,7 +321,7 @@ func (pb *ProgressBar) write(current int64) {
 	}
 }
 
-func (pb *ProgressBar) getWidth() int {
+func (pb *ProgressBar) GetWidth() int {
 	if pb.ForceWidth {
 		return pb.Width
 	}
