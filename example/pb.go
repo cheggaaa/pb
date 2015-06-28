@@ -13,7 +13,7 @@ func main() {
 	bar.ShowPercent = true
 
 	// show bar (by default already true)
-	bar.ShowPercent = true
+	bar.ShowBar = true
 
 	// no need counters
 	bar.ShowCounters = true
