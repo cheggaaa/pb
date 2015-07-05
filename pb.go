@@ -8,6 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -267,9 +268,10 @@ func (pb *ProgressBar) write(current int64) {
 		speedBox = Format(int64(speed), pb.Units) + "/s "
 	}
 
+	barWidth := utf8.RuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
 	// bar
 	if pb.ShowBar {
-		size := width - len(countersBox+pb.BarStart+pb.BarEnd+percentBox+timeLeftBox+speedBox+pb.prefix+pb.postfix)
+		size := width - barWidth
 		if size > 0 {
 			if pb.Total > 0 {
 				curCount := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
@@ -306,8 +308,8 @@ func (pb *ProgressBar) write(current int64) {
 
 	// check len
 	out = pb.prefix + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
-	if len(out) < width {
-		end = strings.Repeat(" ", width-len(out))
+	if utf8.RuneCountInString(out) < width {
+		end = strings.Repeat(" ", width-utf8.RuneCountInString(out))
 	}
 
 	// and print!
