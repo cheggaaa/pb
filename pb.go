@@ -146,8 +146,14 @@ func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 
 // Set custom format for bar
 // Example: bar.Format("[=>_]")
+// Example: bar.Format("[\x00=\x00>\x00-\x00]") // \x00 is the delimiter
 func (pb *ProgressBar) Format(format string) *ProgressBar {
-	formatEntries := strings.Split(format, "")
+	var formatEntries []string
+	if len(format) == 5 {
+		formatEntries = strings.Split(format, "")
+	} else {
+		formatEntries = strings.Split(format, "\x00")
+	}
 	if len(formatEntries) == 5 {
 		pb.BarStart = formatEntries[0]
 		pb.BarEnd = formatEntries[4]

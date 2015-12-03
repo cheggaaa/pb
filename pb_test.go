@@ -1,7 +1,11 @@
 package pb
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/fatih/color"
+	"github.com/mattn/go-colorable"
 )
 
 func Test_IncrementAddsOne(t *testing.T) {
@@ -31,6 +35,23 @@ func Test_Width(t *testing.T) {
 
 func Test_MultipleFinish(t *testing.T) {
 	bar := New(5000)
+	bar.Add(2000)
+	bar.Finish()
+	bar.Finish()
+}
+
+func Test_Format(t *testing.T) {
+	bar := New(5000).Format(strings.Join([]string{
+		color.GreenString("["),
+		color.New(color.BgGreen).SprintFunc()("o"),
+		color.New(color.BgHiGreen).SprintFunc()("o"),
+		color.New(color.BgRed).SprintFunc()("o"),
+		color.GreenString("]"),
+	}, "\x00"))
+	w := colorable.NewColorableStdout()
+	bar.Callback = func(out string) {
+		w.Write([]byte(out))
+	}
 	bar.Add(2000)
 	bar.Finish()
 	bar.Finish()
