@@ -274,7 +274,7 @@ func (pb *ProgressBar) write(current int64) {
 		speedBox = Format(int64(speed), pb.Units) + "/s "
 	}
 
-	barWidth := utf8.RuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
+	barWidth := escapeAwareRuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
 	// bar
 	if pb.ShowBar {
 		size := width - barWidth
@@ -314,7 +314,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// check len
 	out = pb.prefix + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
-	if utf8.RuneCountInString(out) < width {
+	if escapeAwareRuneCountInString(out) < width {
 		end = strings.Repeat(" ", width-utf8.RuneCountInString(out))
 	}
 
