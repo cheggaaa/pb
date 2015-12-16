@@ -146,8 +146,14 @@ func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 
 // Set custom format for bar
 // Example: bar.Format("[=>_]")
+// Example: bar.Format("[\x00=\x00>\x00-\x00]") // \x00 is the delimiter
 func (pb *ProgressBar) Format(format string) *ProgressBar {
-	formatEntries := strings.Split(format, "")
+	var formatEntries []string
+	if len(format) == 5 {
+		formatEntries = strings.Split(format, "")
+	} else {
+		formatEntries = strings.Split(format, "\x00")
+	}
 	if len(formatEntries) == 5 {
 		pb.BarStart = formatEntries[0]
 		pb.BarEnd = formatEntries[4]
@@ -268,7 +274,7 @@ func (pb *ProgressBar) write(current int64) {
 		speedBox = Format(int64(speed), pb.Units) + "/s "
 	}
 
-	barWidth := utf8.RuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
+	barWidth := escapeAwareRuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
 	// bar
 	if pb.ShowBar {
 		size := width - barWidth
@@ -308,7 +314,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// check len
 	out = pb.prefix + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
-	if utf8.RuneCountInString(out) < width {
+	if escapeAwareRuneCountInString(out) < width {
 		end = strings.Repeat(" ", width-utf8.RuneCountInString(out))
 	}
 
