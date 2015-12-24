@@ -44,6 +44,7 @@ func New64(total int64) *ProgressBar {
 		ManualUpdate:  false,
 		isFinish:      make(chan struct{}),
 		currentValue:  -1,
+		ewma:          &EWMA{},
 	}
 	return pb.Format(FORMAT)
 }
@@ -77,12 +78,13 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
-	finishOnce sync.Once //Guards isFinish
+	finishOnce sync.Once // Guards isFinish
 	isFinish   chan struct{}
 
 	startTime    time.Time
 	startValue   int64
 	currentValue int64
+	ewma         *EWMA // struct for holding moving average
 
 	prefix, postfix string
 
@@ -263,7 +265,8 @@ func (pb *ProgressBar) write(current int64) {
 			perEntry := fromStart / time.Duration(currentFromStart)
 			left := time.Duration(pb.Total-currentFromStart) * perEntry
 			left = (left / time.Second) * time.Second
-			timeLeftBox = left.String()
+			pb.ewma.Add(left.Seconds())
+			timeLeftBox = (time.Duration(pb.ewma.Value()) * time.Second).String()
 		}
 	}
 
