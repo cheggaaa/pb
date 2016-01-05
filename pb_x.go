@@ -84,21 +84,12 @@ func catchTerminate(quit chan int) (err error) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL)
 	defer signal.Stop(sig)
-
-	process, err := os.FindProcess(os.Getpid())
-	if err != nil {
-		return
-	}
-
 	for {
 		select {
 		case <-quit:
 			unlockEcho()
-			return
-		case s := <-sig:
+		case <-sig:
 			unlockEcho()
-			process.Signal(s)
-			return
 		}
 	}
 }

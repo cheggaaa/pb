@@ -57,3 +57,7 @@ func (p *Pool) writer(finish chan int) {
 		time.Sleep(p.RefreshRate)
 	}
 }
+
+func (p *Pool) Close() error {
+	return unlockEcho()
+}
