@@ -1,4 +1,4 @@
-// +build linux darwin freebsd openbsd
+// +build linux darwin freebsd netbsd openbsd dragonfly
 
 package pb
 

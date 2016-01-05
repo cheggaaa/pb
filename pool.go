@@ -58,6 +58,6 @@ func (p *Pool) writer(finish chan int) {
 	}
 }
 
-func (p *Pool) Close() error {
+func (p *Pool) Stop() error {
 	return unlockEcho()
 }
