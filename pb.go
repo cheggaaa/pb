@@ -1,3 +1,4 @@
+// Simple console progress bars
 package pb
 
 import (

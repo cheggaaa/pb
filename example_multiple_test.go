@@ -1,14 +1,14 @@
-// +build linux darwin freebsd netbsd openbsd solaris dragonfly
 package pb_test
 
 import (
-	"github.com/cheggaaa/pb"
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/cheggaaa/pb"
 )
 
-func ExamleMultiple() {
+func Example_multiple() {
 	// create bars
 	first := pb.New(200).Prefix("First ")
 	second := pb.New(200).Prefix("Second ")

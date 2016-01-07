@@ -12,7 +12,7 @@ import (
 	"github.com/cheggaaa/pb"
 )
 
-func ExampleCopy() {
+func Example_copy() {
 	// check args
 	if len(os.Args) < 3 {
 		printUsage()
