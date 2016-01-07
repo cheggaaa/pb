@@ -88,6 +88,25 @@ r := myReader
 // my io.Writer
 w := myWriter
 
+// create proxy reader
+reader := bar.NewProxyReader(r)
+
+// and copy from pb reader
+io.Copy(w, reader)
+
+```
+
+```go
+// create and start bar
+bar := pb.New(myDataLen).SetUnits(pb.U_BYTES)
+bar.Start()
+
+// my io.Reader
+r := myReader
+
+// my io.Writer
+w := myWriter
+
 // create multi writer
 writer := io.MultiWriter(w, bar)
 
@@ -103,7 +122,11 @@ io.Copy(writer, r)
 bar.Format("<.- >")
 ```
 
-## Multiple Progress Bars
+## Multiple Progress Bars (experimental and unstable)
+
+#####Multiple bars do not works at Windows!!!
+
+Do not print to terminal while pool is active.
 
 ```go
 package main
@@ -115,26 +138,31 @@ import (
     "time"
 )
 
-func main() {
-    pool := &pb.Pool{}
-    first := pb.New(1000).Prefix("First ")
-    second := pb.New(1000).Prefix("Second ")
-    third := pb.New(1000).Prefix("Third ")
-    pool.Add(first, second, third)
-    pool.Start()
-    wg := new(sync.WaitGroup)
-    for _, bar := range []*pb.ProgressBar{first, second, third} {
-        wg.Add(1)
-        go func(cb *pb.ProgressBar) {
-            for n := 0; n < 1000; n++ {
-                cb.Increment()
-                time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-            }
-            cb.Finish()
-            wg.Done()
-        }(bar)
-    }
-    wg.Wait()
+// create bars
+first := pb.New(200).Prefix("First ")
+second := pb.New(200).Prefix("Second ")
+third := pb.New(200).Prefix("Third ")
+// start pool
+pool, err := pb.StartPool(first, second, third)
+if err != nil {
+	panic(err)
+}
+// update bars
+wg := new(sync.WaitGroup)
+for _, bar := range []*pb.ProgressBar{first, second, third} {
+	wg.Add(1)
+	go func(cb *pb.ProgressBar) {
+		for n := 0; n < 200; n++ {
+			cb.Increment()
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+		}
+		cb.Finish()
+		wg.Done()
+	}(bar)
+}
+wg.Wait()
+// close pool
+pool.Stop()
 ```
 
 The result will be as follows:

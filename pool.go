@@ -1,17 +1,31 @@
+// +build linux darwin freebsd netbsd openbsd solaris dragonfly
 package pb
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
+
+// Create and start new pool with given bars
+// You need call pool.Stop() after work
+func StartPool(pbs ...*ProgressBar) (pool *Pool, err error) {
+	pool = new(Pool)
+	if err = pool.start(); err != nil {
+		return
+	}
+	pool.add(pbs...)
+	return
+}
 
 type Pool struct {
 	RefreshRate time.Duration
 	bars        []*ProgressBar
-	isFinished  bool
+	quit        chan int
+	finishOnce  sync.Once
 }
 
-func (p *Pool) Add(pbs ...*ProgressBar) {
+func (p *Pool) add(pbs ...*ProgressBar) {
 	for _, bar := range pbs {
 		bar.ManualUpdate = true
 		bar.NotPrint = true
@@ -20,44 +34,56 @@ func (p *Pool) Add(pbs ...*ProgressBar) {
 	}
 }
 
-func (p *Pool) Start() (err error) {
+func (p *Pool) start() (err error) {
 	p.RefreshRate = DefaultRefreshRate
 	quit, err := lockEcho()
 	if err != nil {
 		return
 	}
+	p.quit = make(chan int)
 	go p.writer(quit)
 	return
 }
 
 func (p *Pool) writer(finish chan int) {
 	var first = true
-	var out string
-
 	for {
-		if first {
-			first = false
-		} else {
-			out = fmt.Sprintf("\033[%dA", len(p.bars))
-		}
-		isFinished := true
-		for _, bar := range p.bars {
-			bar.Update()
-			out += fmt.Sprintf("\r%s\n", bar.String())
-			if !bar.isFinish {
-				isFinished = false
+		select {
+		case <-time.After(p.RefreshRate):
+			if p.print(first) {
+				p.print(false)
+				finish <- 1
+				return
 			}
-		}
-		fmt.Print(out)
-		if isFinished {
-			p.isFinished = true
+			first = false
+		case <-p.quit:
 			finish <- 1
 			return
 		}
-		time.Sleep(p.RefreshRate)
 	}
 }
 
+func (p *Pool) print(first bool) bool {
+	var out string
+	if !first {
+		out = fmt.Sprintf("\033[%dA", len(p.bars))
+	}
+	isFinished := true
+	for _, bar := range p.bars {
+		if !bar.isFinish {
+			isFinished = false
+		}
+		bar.Update()
+		out += fmt.Sprintf("\r%s\n", bar.String())
+	}
+	fmt.Print(out)
+	return isFinished
+}
+
+// Restore terminal state and close pool
 func (p *Pool) Stop() error {
+	p.finishOnce.Do(func() {
+		close(p.quit)
+	})
 	return unlockEcho()
 }
