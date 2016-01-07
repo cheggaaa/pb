@@ -1,5 +1,5 @@
 // +build linux darwin freebsd netbsd openbsd solaris dragonfly
-package main
+package pb_test
 
 import (
 	"github.com/cheggaaa/pb"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func main() {
+func ExamleMultiple() {
 	// create bars
 	first := pb.New(200).Prefix("First ")
 	second := pb.New(200).Prefix("Second ")

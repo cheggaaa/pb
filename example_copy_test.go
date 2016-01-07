@@ -1,17 +1,18 @@
-package main
+package pb_test
 
 import (
 	"fmt"
-	"github.com/cheggaaa/pb"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cheggaaa/pb"
 )
 
-func main() {
+func ExampleCopy() {
 	// check args
 	if len(os.Args) < 3 {
 		printUsage()
@@ -68,11 +69,11 @@ func main() {
 	bar.ShowSpeed = true
 	bar.Start()
 
-	// create multi writer
-	writer := io.MultiWriter(dest, bar)
+	// create proxy reader
+	reader := bar.NewProxyReader(source)
 
-	// and copy
-	io.Copy(writer, source)
+	// and copy from reader
+	io.Copy(dest, reader)
 	bar.Finish()
 }
 

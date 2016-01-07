@@ -1,11 +1,12 @@
-package main
+package pb_test
 
 import (
-	"github.com/cheggaaa/pb"
 	"time"
+
+	"github.com/cheggaaa/pb"
 )
 
-func main() {
+func Example() {
 	count := 5000
 	bar := pb.New(count)
 
@@ -15,7 +16,6 @@ func main() {
 	// show bar (by default already true)
 	bar.ShowBar = true
 
-	// no need counters
 	bar.ShowCounters = true
 
 	bar.ShowTimeLeft = true
