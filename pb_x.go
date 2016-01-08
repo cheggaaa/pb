@@ -18,9 +18,6 @@ const (
 	TIOCGWINSZ_OSX = 1074295912
 )
 
-const ioctlReadTermios = syscall.TCGETS
-const ioctlWriteTermios = syscall.TCSETS
-
 var tty *os.File
 
 var ErrPoolWasStarted = errors.New("Bar pool was started")
