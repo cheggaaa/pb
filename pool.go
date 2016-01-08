@@ -83,6 +83,9 @@ func (p *Pool) print(first bool) bool {
 
 // Restore terminal state and close pool
 func (p *Pool) Stop() error {
+	// Wait until one final refresh has passed.
+	time.Sleep(p.RefreshRate)
+
 	p.finishOnce.Do(func() {
 		close(p.quit)
 	})
