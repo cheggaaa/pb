@@ -95,6 +95,8 @@ type ProgressBar struct {
 	Empty    string
 	Current  string
 	CurrentN string
+
+	AlwaysUpdate bool
 }
 
 // Start print
@@ -352,7 +354,7 @@ func (pb *ProgressBar) GetWidth() int {
 // Write the current state of the progressbar
 func (pb *ProgressBar) Update() {
 	c := atomic.LoadInt64(&pb.current)
-	if c != pb.currentValue {
+	if pb.AlwaysUpdate || c != pb.currentValue {
 		pb.write(c)
 		pb.currentValue = c
 	}
