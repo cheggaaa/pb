@@ -4,6 +4,7 @@ package pb
 
 import (
 	"github.com/olekukonko/ts"
+	"os"
 )
 
 var tty = os.Stdin
