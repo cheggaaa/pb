@@ -45,6 +45,7 @@ func New64(total int64) *ProgressBar {
 		ManualUpdate:  false,
 		finish:        make(chan struct{}),
 		currentValue:  -1,
+		mu:            new(sync.Mutex),
 	}
 	return pb.Format(FORMAT)
 }
@@ -88,6 +89,7 @@ type ProgressBar struct {
 
 	prefix, postfix string
 
+	mu        *sync.Mutex
 	lastPrint string
 
 	BarStart string
@@ -326,7 +328,9 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// and print!
+	pb.mu.Lock()
 	pb.lastPrint = out + end
+	pb.mu.Unlock()
 	switch {
 	case pb.Output != nil:
 		fmt.Fprint(pb.Output, "\r"+out+end)
