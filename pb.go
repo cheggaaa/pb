@@ -219,23 +219,9 @@ func (pb *ProgressBar) FinishPrint(str string) {
 	fmt.Println(str)
 }
 
-// implement io.Writer
-func (pb *ProgressBar) Write(p []byte) (n int, err error) {
-	n = len(p)
-	pb.Add(n)
-	return
-}
-
-// implement io.Reader
-func (pb *ProgressBar) Read(p []byte) (n int, err error) {
-	n = len(p)
-	pb.Add(n)
-	return
-}
-
 // Create new proxy reader over bar
-func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
-	return &Reader{r, pb}
+func (pb *ProgressBar) NewProxyReader(r io.ReadWriteCloser) *ReadWriteCloser {
+	return &ReadWriteCloser{r, pb}
 }
 
 func (pb *ProgressBar) write(current int64) {

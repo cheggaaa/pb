@@ -4,14 +4,24 @@ import (
 	"io"
 )
 
-// It's proxy reader, implement io.Reader
-type Reader struct {
-	io.Reader
+// It's proxy, implement io.ReadWriteCloser
+type ReadWriteCloser struct {
+	io.ReadWriteCloser
 	bar *ProgressBar
 }
 
-func (r *Reader) Read(p []byte) (n int, err error) {
-	n, err = r.Reader.Read(p)
+func (r *ReadWriteCloser) Read(p []byte) (n int, err error) {
+	n, err = r.ReadWriteCloser.Read(p)
 	r.bar.Add(n)
 	return
+}
+
+func (r *ReadWriteCloser) Write(p []byte) (n int, err error) {
+	n, err = r.ReadWriteCloser.Write(p)
+	r.bar.Add(n)
+	return
+}
+
+func (r *ReadWriteCloser) Close() error {
+	return r.ReadWriteCloser.Close()
 }
