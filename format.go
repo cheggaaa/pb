@@ -2,8 +2,8 @@ package pb
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
+	"time"
 )
 
 type Units int
@@ -16,13 +16,13 @@ const (
 )
 
 // Format integer
-func Format(i int64, units Units) string {
+func Format(i int64, units Units, width int) string {
 	switch units {
 	case U_BYTES:
 		return FormatBytes(i)
 	default:
 		// by default just convert to string
-		return strconv.FormatInt(i, 10)
+		return fmt.Sprintf(fmt.Sprintf("%%%dd", width), i)
 	}
 }
 
@@ -42,4 +42,13 @@ func FormatBytes(i int64) (result string) {
 	}
 	result = strings.Trim(result, " ")
 	return
+}
+
+func FormatDuration(d time.Duration) string {
+	res := ""
+	if d > time.Hour*24 {
+		res = fmt.Sprintf("%dd", d/24/time.Hour)
+		d -= (d / time.Hour / 24) * (time.Hour * 24)
+	}
+	return fmt.Sprintf("%s%v ", res, d)
 }
