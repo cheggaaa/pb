@@ -79,6 +79,10 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
+	// default width for unit numbers and time box
+	UnitsWidth   int
+	TimeBoxWidth int
+
 	finishOnce sync.Once //Guards isFinish
 	finish     chan struct{}
 	isFinish   bool
@@ -246,15 +250,15 @@ func (pb *ProgressBar) write(current int64) {
 	// percents
 	if pb.ShowPercent {
 		percent := float64(current) / (float64(pb.Total) / float64(100))
-		percentBox = fmt.Sprintf(" %.02f %% ", percent)
+		percentBox = fmt.Sprintf(" %6.02f %% ", percent)
 	}
 
 	// counters
 	if pb.ShowCounters {
 		if pb.Total > 0 {
-			countersBox = fmt.Sprintf("%s / %s ", Format(current, pb.Units), Format(pb.Total, pb.Units))
+			countersBox = fmt.Sprintf("%s / %s ", Format(current, pb.Units, pb.UnitsWidth), Format(pb.Total, pb.Units, pb.UnitsWidth))
 		} else {
-			countersBox = Format(current, pb.Units) + " / ? "
+			countersBox = Format(current, pb.Units, pb.UnitsWidth) + " / ? "
 		}
 	}
 
@@ -272,15 +276,19 @@ func (pb *ProgressBar) write(current int64) {
 			perEntry := fromStart / time.Duration(currentFromStart)
 			left := time.Duration(pb.Total-currentFromStart) * perEntry
 			left = (left / time.Second) * time.Second
-			timeLeftBox = left.String()
+			timeLeftBox = FormatDuration(left)
 		}
+	}
+
+	if len(timeLeftBox) < pb.TimeBoxWidth {
+		timeLeftBox = fmt.Sprintf("%s%s", strings.Repeat(" ", pb.TimeBoxWidth-len(timeLeftBox)), timeLeftBox)
 	}
 
 	// speed
 	if pb.ShowSpeed && currentFromStart > 0 {
 		fromStart := time.Now().Sub(pb.startTime)
 		speed := float64(currentFromStart) / (float64(fromStart) / float64(time.Second))
-		speedBox = Format(int64(speed), pb.Units) + "/s "
+		speedBox = Format(int64(speed), pb.Units, pb.UnitsWidth) + "/s "
 	}
 
 	barWidth := escapeAwareRuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
