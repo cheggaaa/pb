@@ -349,6 +349,11 @@ func (pb *ProgressBar) write(current int64) {
 	}
 }
 
+// GetTerminalWidth - returns terminal width for all platforms.
+func GetTerminalWidth() (int, error) {
+	return terminalWidth()
+}
+
 func (pb *ProgressBar) GetWidth() int {
 	if pb.ForceWidth {
 		return pb.Width
