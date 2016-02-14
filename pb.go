@@ -114,7 +114,8 @@ func (pb *ProgressBar) Start() *ProgressBar {
 		pb.ShowPercent = false
 	}
 	if !pb.ManualUpdate {
-		go pb.writer()
+		pb.Update() // Initial printing of the bar before running the bar refresher.
+		go pb.refresher()
 	}
 	return pb
 }
@@ -340,6 +341,8 @@ func (pb *ProgressBar) write(current int64) {
 	pb.lastPrint = out + end
 	pb.mu.Unlock()
 	switch {
+	case pb.isFinish:
+		return
 	case pb.Output != nil:
 		fmt.Fprint(pb.Output, "\r"+out+end)
 	case pb.Callback != nil:
@@ -376,9 +379,8 @@ func (pb *ProgressBar) String() string {
 	return pb.lastPrint
 }
 
-// Internal loop for writing progressbar
-func (pb *ProgressBar) writer() {
-	pb.Update()
+// Internal loop for refreshing the progressbar
+func (pb *ProgressBar) refresher() {
 	for {
 		select {
 		case <-pb.finish:
