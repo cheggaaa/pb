@@ -1,4 +1,5 @@
 // +build linux darwin freebsd netbsd openbsd solaris dragonfly
+// +build !appengine
 
 package pb
 
@@ -33,13 +34,14 @@ func init() {
 	}
 }
 
+// terminalWidth returns width of the terminal.
 func terminalWidth() (int, error) {
 	w := new(window)
 	tio := syscall.TIOCGWINSZ
 	if runtime.GOOS == "darwin" {
 		tio = TIOCGWINSZ_OSX
 	}
-	res, _, err := syscall.Syscall(sys_ioctl,
+	res, _, err := syscall.Syscall(sysIoctl,
 		tty.Fd(),
 		uintptr(tio),
 		uintptr(unsafe.Pointer(w)),
@@ -62,7 +64,7 @@ func lockEcho() (quit chan int, err error) {
 	echoLocked = true
 
 	fd := tty.Fd()
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
+	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
 		err = fmt.Errorf("Can't get terminal settings: %v", e)
 		return
 	}
@@ -71,7 +73,7 @@ func lockEcho() (quit chan int, err error) {
 	newState.Lflag &^= syscall.ECHO
 	newState.Lflag |= syscall.ICANON | syscall.ISIG
 	newState.Iflag |= syscall.ICRNL
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&newState)), 0, 0, 0); e != 0 {
+	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&newState)), 0, 0, 0); e != 0 {
 		err = fmt.Errorf("Can't set terminal settings: %v", e)
 		return
 	}
@@ -88,7 +90,7 @@ func unlockEcho() (err error) {
 	}
 	echoLocked = false
 	fd := tty.Fd()
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
+	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
 		err = fmt.Errorf("Can't set terminal settings")
 	}
 	return

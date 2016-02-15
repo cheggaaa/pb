@@ -1,4 +1,5 @@
-// +build linux
+// +build linux solaris
+// +build !appengine
 
 package pb
 
