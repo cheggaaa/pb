@@ -31,7 +31,7 @@ func New(total int) *ProgressBar {
 	return New64(int64(total))
 }
 
-// Create new progress bar object uding int64 as total
+// Create new progress bar object using int64 as total
 func New64(total int64) *ProgressBar {
 	pb := &ProgressBar{
 		Total:         total,
@@ -79,7 +79,7 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
-	// default width for unit numbers and time box
+	// Default width for the time box.
 	UnitsWidth   int
 	TimeBoxWidth int
 
@@ -261,10 +261,12 @@ func (pb *ProgressBar) write(current int64) {
 
 	// counters
 	if pb.ShowCounters {
+		current := Format(current).To(pb.Units).Width(pb.UnitsWidth)
 		if pb.Total > 0 {
-			countersBox = fmt.Sprintf("%s / %s ", Format(current, pb.Units, pb.UnitsWidth), Format(pb.Total, pb.Units, pb.UnitsWidth))
+			total := Format(pb.Total).To(pb.Units).Width(pb.UnitsWidth)
+			countersBox = fmt.Sprintf("%s / %s ", current, total)
 		} else {
-			countersBox = Format(current, pb.Units, pb.UnitsWidth) + " / ? "
+			countersBox = fmt.Sprintf(" %s / ? ", current)
 		}
 	}
 
@@ -293,7 +295,8 @@ func (pb *ProgressBar) write(current int64) {
 				left = time.Duration(currentFromStart) * perEntry
 				left = (left / time.Second) * time.Second
 			}
-			timeLeftBox = FormatDuration(left)
+			timeLeft := Format(int64(left)).To(U_DURATION).String()
+			timeLeftBox = fmt.Sprintf("%s ", timeLeft)
 		}
 	}
 
@@ -305,7 +308,7 @@ func (pb *ProgressBar) write(current int64) {
 	if pb.ShowSpeed && currentFromStart > 0 {
 		fromStart := time.Now().Sub(pb.startTime)
 		speed := float64(currentFromStart) / (float64(fromStart) / float64(time.Second))
-		speedBox = Format(int64(speed), pb.Units, pb.UnitsWidth) + "/s "
+		speedBox = Format(int64(speed)).To(pb.Units).Width(pb.UnitsWidth).PerSec().String()
 	}
 
 	barWidth := escapeAwareRuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)

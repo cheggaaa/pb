@@ -1,15 +1,17 @@
-package pb
+package pb_test
 
 import (
 	"fmt"
+	"github.com/cheggaaa/pb"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func Test_DefaultsToInteger(t *testing.T) {
 	value := int64(1000)
 	expected := strconv.Itoa(int(value))
-	actual := Format(value, -1, 0)
+	actual := pb.Format(value).String()
 
 	if actual != expected {
 		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
@@ -19,7 +21,7 @@ func Test_DefaultsToInteger(t *testing.T) {
 func Test_CanFormatAsInteger(t *testing.T) {
 	value := int64(1000)
 	expected := strconv.Itoa(int(value))
-	actual := Format(value, U_NO, 0)
+	actual := pb.Format(value).To(pb.U_NO).String()
 
 	if actual != expected {
 		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
@@ -29,8 +31,26 @@ func Test_CanFormatAsInteger(t *testing.T) {
 func Test_CanFormatAsBytes(t *testing.T) {
 	value := int64(1000)
 	expected := "1000 B"
-	actual := Format(value, U_BYTES, 0)
+	actual := pb.Format(value).To(pb.U_BYTES).String()
 
+	if actual != expected {
+		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
+	}
+}
+
+func Test_CanFormatDuration(t *testing.T) {
+	value := 10 * time.Minute
+	expected := "10m0s"
+	actual := pb.Format(int64(value)).To(pb.U_DURATION).String()
+	if actual != expected {
+		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
+	}
+}
+
+func Test_DefaultUnitsWidth(t *testing.T) {
+	value := 10
+	expected := "     10"
+	actual := pb.Format(int64(value)).Width(7).String()
 	if actual != expected {
 		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
 	}
