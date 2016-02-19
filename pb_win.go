@@ -37,6 +37,8 @@ type (
 		X, Y int16
 	}
 
+	word int16
+
 	// Contains information about a console screen buffer.
 	// http://msdn.microsoft.com/en-us/library/windows/desktop/ms682093(v=vs.85).aspx
 	consoleScreenBufferInfo struct {
@@ -55,5 +57,5 @@ func terminalWidth() (width int, err error) {
 	if e != 0 {
 		return 0, error(e)
 	}
-	return int(buffer.dwSize.X), nil
+	return int(info.dwSize.X), nil
 }
