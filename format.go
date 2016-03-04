@@ -51,7 +51,7 @@ func (f *formatter) PerSec() *formatter {
 func (f *formatter) String() (out string) {
 	switch f.unit {
 	case U_BYTES:
-		return formatBytes(f.n)
+		out = formatBytes(f.n)
 	case U_DURATION:
 		d := time.Duration(f.n)
 		if d > time.Hour*24 {
