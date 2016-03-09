@@ -125,6 +125,12 @@ func (pb *ProgressBar) Increment() int {
 	return pb.Add(1)
 }
 
+// Get current value
+func (pb *ProgressBar) Get() int64 {
+	c := atomic.LoadInt64(&pb.current)
+	return c
+}
+
 // Set current value
 func (pb *ProgressBar) Set(current int) *ProgressBar {
 	return pb.Set64(int64(current))
