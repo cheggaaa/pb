@@ -62,6 +62,7 @@ func StartNew(total int) *ProgressBar {
 // }
 //
 type Callback func(out string)
+type Transformer func(out string) string
 
 type ProgressBar struct {
 	current int64 // current must be first member of struct (https://code.google.com/p/go/issues/detail?id=5278)
@@ -73,6 +74,7 @@ type ProgressBar struct {
 	ShowFinalTime                    bool
 	Output                           io.Writer
 	Callback                         Callback
+	Transform                        Transformer
 	NotPrint                         bool
 	Units                            Units
 	Width                            int
@@ -355,7 +357,7 @@ func (pb *ProgressBar) write(current int64) {
 
 	// and print!
 	pb.mu.Lock()
-	pb.lastPrint = out + end
+	pb.lastPrint = pb.Transform(out + end)
 	pb.mu.Unlock()
 	switch {
 	case pb.isFinish:
