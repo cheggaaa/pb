@@ -12,6 +12,9 @@ import (
 	"unicode/utf8"
 )
 
+// Current version
+const Version = "1.0.0"
+
 const (
 	// Default refresh rate - 200ms
 	DEFAULT_REFRESH_RATE = time.Millisecond * 200
