@@ -2,7 +2,7 @@ package pb_test
 
 import (
 	"fmt"
-	"github.com/cheggaaa/pb"
+	"gopkg.in/cheggaaa/pb.v1"
 	"strconv"
 	"testing"
 	"time"
