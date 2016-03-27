@@ -122,8 +122,6 @@ bar.Format("<.- >")
 
 ## Multiple Progress Bars (experimental and unstable)
 
-#####Multiple bars do not works at Windows!!!
-
 Do not print to terminal while pool is active.
 
 ```go
