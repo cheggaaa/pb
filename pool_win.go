@@ -2,23 +2,25 @@
 
 package pb
 
-import "fmt"
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 func (p *Pool) print(first bool) bool {
 	var out string
 	if !first {
-        coords, err := getCursorPos() 
-        if err != nil {
-            log.Panic(err)
-        }
-        coords.Y -= int16(len(p.bars))
-		coords.X =0
-        
-        err = setCursorPos(coords)
-        if err != nil {
-            log.Panic(err)
-        }
+		coords, err := getCursorPos()
+		if err != nil {
+			log.Panic(err)
+		}
+		coords.Y -= int16(len(p.bars))
+		coords.X = 0
+
+		err = setCursorPos(coords)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 	isFinished := true
 	for _, bar := range p.bars {

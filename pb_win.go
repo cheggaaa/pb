@@ -3,12 +3,12 @@
 package pb
 
 import (
+	"errors"
+	"fmt"
 	"os"
+	"sync"
 	"syscall"
 	"unsafe"
-	"errors"
-	"sync"
-	"fmt"
 )
 
 var tty = os.Stdin
@@ -88,7 +88,7 @@ func getCursorPos() (pos coordinates, err error) {
 }
 
 func setCursorPos(pos coordinates) error {
-	_, _, e := syscall.Syscall(setConsoleCursorPosition.Addr(), 2, uintptr(syscall.Stdout), uintptr(uint32(uint16(pos.Y))<<16 | uint32(uint16(pos.X))), 0)
+	_, _, e := syscall.Syscall(setConsoleCursorPosition.Addr(), 2, uintptr(syscall.Stdout), uintptr(uint32(uint16(pos.Y))<<16|uint32(uint16(pos.X))), 0)
 	if e != 0 {
 		return error(e)
 	}
@@ -96,7 +96,7 @@ func setCursorPos(pos coordinates) error {
 }
 
 var ErrPoolWasStarted = errors.New("Bar pool was started")
-	
+
 var echoLocked bool
 var echoLockMutex sync.Mutex
 
