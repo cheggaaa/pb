@@ -285,7 +285,7 @@ func (pb *ProgressBar) write(current int64) {
 			} else {
 				left = (time.Duration(currentFromStart) / time.Second) * time.Second
 			}
-			timeLeftBox = left.String()
+			timeLeftBox = fmt.Sprintf(" %s", left.String())
 		}
 	default:
 		if pb.ShowTimeLeft && currentFromStart > 0 {
