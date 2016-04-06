@@ -75,7 +75,7 @@ func terminalWidth() (width int, err error) {
 	if e != 0 {
 		return 0, error(e)
 	}
-	return int(info.dwSize.X), nil
+	return int(info.dwSize.X) - 1, nil
 }
 
 func getCursorPos() (pos coordinates, err error) {
