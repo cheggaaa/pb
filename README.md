@@ -112,6 +112,8 @@ writer := io.MultiWriter(w, bar)
 
 // and copy
 io.Copy(writer, r)
+
+bar.Finish()
 ```
 
 ## Custom Progress Bar Look-and-feel
