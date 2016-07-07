@@ -81,6 +81,7 @@ type ProgressBar struct {
 	Width                            int
 	ForceWidth                       bool
 	ManualUpdate                     bool
+	AutoStat                         bool
 
 	// Default width for the time box.
 	UnitsWidth   int
@@ -115,6 +116,7 @@ func (pb *ProgressBar) Start() *ProgressBar {
 	if pb.Total == 0 {
 		pb.ShowTimeLeft = false
 		pb.ShowPercent = false
+		pb.AutoStat = false
 	}
 	if !pb.ManualUpdate {
 		pb.Update() // Initial printing of the bar before running the bar refresher.
@@ -398,6 +400,14 @@ func (pb *ProgressBar) Update() {
 	if pb.AlwaysUpdate || c != pb.currentValue {
 		pb.write(c)
 		pb.currentValue = c
+	}
+	if pb.AutoStat {
+		if c == 0 {
+			pb.startTime = time.Now()
+			pb.startValue = pb.current
+		} else if c >= pb.Total && pb.isFinish != true {
+			pb.Finish()
+		}
 	}
 }
 

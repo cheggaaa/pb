@@ -3,6 +3,7 @@ package pb
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
@@ -54,5 +55,20 @@ func Test_Format(t *testing.T) {
 	}
 	bar.Add(2000)
 	bar.Finish()
+	bar.Finish()
+}
+
+func Test_AutoStat(t *testing.T) {
+	bar := New(5)
+	bar.AutoStat = true
+	bar.Start()
+	time.Sleep(2 * time.Second)
+	//real start work
+	for i := 0; i < 5; i++ {
+		time.Sleep(500 * time.Millisecond)
+		bar.Increment()
+	}
+	//real finish work
+	time.Sleep(2 * time.Second)
 	bar.Finish()
 }
