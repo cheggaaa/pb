@@ -404,7 +404,7 @@ func (pb *ProgressBar) Update() {
 	if pb.AutoStat {
 		if c == 0 {
 			pb.startTime = time.Now()
-			pb.startValue = pb.current
+			pb.startValue = 0
 		} else if c >= pb.Total && pb.isFinish != true {
 			pb.Finish()
 		}
