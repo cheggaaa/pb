@@ -289,11 +289,7 @@ func (pb *ProgressBar) write(current int64) {
 	case <-pb.finish:
 		if pb.ShowFinalTime {
 			var left time.Duration
-			if pb.Total > 0 {
-				left = (fromStart / time.Second) * time.Second
-			} else {
-				left = (time.Duration(currentFromStart) / time.Second) * time.Second
-			}
+			left = (fromStart / time.Second) * time.Second
 			timeLeftBox = fmt.Sprintf(" %s", left.String())
 		}
 	default:
