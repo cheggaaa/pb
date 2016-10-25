@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 	"time"
@@ -71,4 +72,32 @@ func Test_AutoStat(t *testing.T) {
 	//real finish work
 	time.Sleep(2 * time.Second)
 	bar.Finish()
+}
+
+func Test_Finish_PrintNewline(t *testing.T) {
+	bar := New(5)
+	buf := &bytes.Buffer{}
+	bar.Output = buf
+	bar.Finish()
+
+	expected := "\n"
+	actual := buf.String()
+	//Finish should write newline to bar.Output
+	if !strings.HasSuffix(actual, expected) {
+		t.Errorf("Expected %q to have suffix %q", expected, actual)
+	}
+}
+
+func Test_FinishPrint(t *testing.T) {
+	bar := New(5)
+	buf := &bytes.Buffer{}
+	bar.Output = buf
+	bar.FinishPrint("foo")
+
+	expected := "foo\n"
+	actual := buf.String()
+	//FinishPrint should write to bar.Output
+	if !strings.HasSuffix(actual, expected) {
+		t.Errorf("Expected %q to have suffix %q", expected, actual)
+	}
 }
