@@ -222,7 +222,10 @@ func (pb *ProgressBar) Finish() {
 	pb.finishOnce.Do(func() {
 		close(pb.finish)
 		pb.write(atomic.LoadInt64(&pb.current))
-		if !pb.NotPrint {
+		switch {
+		case pb.Output != nil:
+			fmt.Fprintln(pb.Output)
+		case !pb.NotPrint:
 			fmt.Println()
 		}
 		pb.isFinish = true
@@ -232,7 +235,11 @@ func (pb *ProgressBar) Finish() {
 // End print and write string 'str'
 func (pb *ProgressBar) FinishPrint(str string) {
 	pb.Finish()
-	fmt.Println(str)
+	if pb.Output != nil {
+		fmt.Fprintln(pb.Output, str)
+	} else {
+		fmt.Println(str)
+	}
 }
 
 // implement io.Writer
