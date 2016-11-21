@@ -13,4 +13,8 @@ func Test_RuneCount(t *testing.T) {
 	if e, l := 17, escapeAwareRuneCountInString(s); l != e {
 		t.Errorf("Invalid length %d, expected %d", l, e)
 	}
+	s = "進捗 "
+	if e, l := 5, escapeAwareRuneCountInString(s); l != e {
+		t.Errorf("Invalid length %d, expected %d", l, e)
+	}
 }
