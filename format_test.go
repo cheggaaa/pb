@@ -2,10 +2,11 @@ package pb_test
 
 import (
 	"fmt"
-	"gopkg.in/cheggaaa/pb.v1"
 	"strconv"
 	"testing"
 	"time"
+
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 func Test_DefaultsToInteger(t *testing.T) {
@@ -29,12 +30,22 @@ func Test_CanFormatAsInteger(t *testing.T) {
 }
 
 func Test_CanFormatAsBytes(t *testing.T) {
-	value := int64(1000)
-	expected := "1000 B"
-	actual := pb.Format(value).To(pb.U_BYTES).String()
+	inputs := []struct {
+		v int64
+		e string
+	}{
+		{v: 1000, e: "1000 B"},
+		{v: 1024, e: "1.00 KiB"},
+		{v: 3*pb.MiB + 140*pb.KiB, e: "3.14 MiB"},
+		{v: 2 * pb.GiB, e: "2.00 GiB"},
+		{v: 2048 * pb.GiB, e: "2.00 TiB"},
+	}
 
-	if actual != expected {
-		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
+	for _, input := range inputs {
+		actual := pb.Format(input.v).To(pb.U_BYTES).String()
+		if actual != input.e {
+			t.Error(fmt.Sprintf("Expected {%s} was {%s}", input.e, actual))
+		}
 	}
 }
 
