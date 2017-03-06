@@ -9,7 +9,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"unicode/utf8"
 )
 
 // Current version
@@ -364,8 +363,8 @@ func (pb *ProgressBar) write(current int64) {
 
 	// check len
 	out = pb.prefix + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
-	if escapeAwareRuneCountInString(out) < width {
-		end = strings.Repeat(" ", width-utf8.RuneCountInString(out))
+	if cl := escapeAwareRuneCountInString(out); cl < width {
+		end = strings.Repeat(" ", width-cl)
 	}
 
 	// and print!
