@@ -13,7 +13,7 @@ import (
 )
 
 // Current version
-const Version = "1.0.6"
+const Version = "1.0.8"
 
 const (
 	// Default refresh rate - 200ms
