@@ -9,6 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 )
 
 // Current version
@@ -172,7 +173,7 @@ func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 // Example: bar.Format("[\x00=\x00>\x00-\x00]") // \x00 is the delimiter
 func (pb *ProgressBar) Format(format string) *ProgressBar {
 	var formatEntries []string
-	if len(format) == 5 {
+	if utf8.RuneCountInString(format) == 5 {
 		formatEntries = strings.Split(format, "")
 	} else {
 		formatEntries = strings.Split(format, "\x00")
