@@ -17,6 +17,9 @@ func (p *Pool) print(first bool) bool {
 			log.Panic(err)
 		}
 		coords.Y -= int16(p.lastBarsCount)
+		if coords.Y < 0 {
+			coords.Y = 0
+		}
 		coords.X = 0
 
 		err = setCursorPos(coords)
