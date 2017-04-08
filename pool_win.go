@@ -8,13 +8,15 @@ import (
 )
 
 func (p *Pool) print(first bool) bool {
+	p.m.Lock()
+	defer p.m.Unlock()
 	var out string
 	if !first {
 		coords, err := getCursorPos()
 		if err != nil {
 			log.Panic(err)
 		}
-		coords.Y -= int16(len(p.bars))
+		coords.Y -= int16(p.lastBarsCount)
 		coords.X = 0
 
 		err = setCursorPos(coords)
@@ -24,7 +26,7 @@ func (p *Pool) print(first bool) bool {
 	}
 	isFinished := true
 	for _, bar := range p.bars {
-		if !bar.isFinish {
+		if !bar.IsFinished() {
 			isFinished = false
 		}
 		bar.Update()
@@ -35,6 +37,6 @@ func (p *Pool) print(first bool) bool {
 	} else {
 		fmt.Print(out)
 	}
-
+	p.lastBarsCount = len(p.bars)
 	return isFinished
 }
