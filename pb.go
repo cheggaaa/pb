@@ -379,9 +379,10 @@ func (pb *ProgressBar) write(current int64) {
 	// and print!
 	pb.mu.Lock()
 	pb.lastPrint = out + end
+	isFinish := pb.isFinish
 	pb.mu.Unlock()
 	switch {
-	case pb.isFinish:
+	case isFinish:
 		return
 	case pb.Output != nil:
 		fmt.Fprint(pb.Output, "\r"+out+end)
