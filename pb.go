@@ -10,7 +10,8 @@ import (
 	"sync/atomic"
 	"text/template"
 	"time"
-	"v2/pb/termutil"
+
+	"gopkg.in/cheggaaa/pb.v1/termutil"
 )
 
 type key int
