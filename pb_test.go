@@ -3,6 +3,7 @@ package pb
 import (
 	"bytes"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -39,6 +40,25 @@ func Test_MultipleFinish(t *testing.T) {
 	bar := New(5000)
 	bar.Add(2000)
 	bar.Finish()
+	bar.Finish()
+}
+
+func TestWriteRace(t *testing.T) {
+	outBuffer := &bytes.Buffer{}
+	totalCount := 20
+	bar := New(totalCount)
+	bar.Output = outBuffer
+	bar.Start()
+	var wg sync.WaitGroup
+	for i := 0; i < totalCount; i++ {
+		wg.Add(1)
+		go func() {
+			bar.Increment()
+			time.Sleep(250 * time.Millisecond)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 	bar.Finish()
 }
 
