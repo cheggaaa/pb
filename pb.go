@@ -47,7 +47,6 @@ func New64(total int64) *ProgressBar {
 		Units:         U_NO,
 		ManualUpdate:  false,
 		finish:        make(chan struct{}),
-		currentValue:  -1,
 	}
 	return pb.Format(FORMAT)
 }
@@ -90,9 +89,8 @@ type ProgressBar struct {
 	finish     chan struct{}
 	isFinish   bool
 
-	startTime    time.Time
-	startValue   int64
-	currentValue int64
+	startTime  time.Time
+	startValue int64
 
 	prefix, postfix string
 
@@ -415,9 +413,8 @@ func (pb *ProgressBar) GetWidth() int {
 // Write the current state of the progressbar
 func (pb *ProgressBar) Update() {
 	c := atomic.LoadInt64(&pb.current)
-	if pb.AlwaysUpdate || c != pb.currentValue {
+	if pb.AlwaysUpdate {
 		pb.write(c)
-		pb.currentValue = c
 	}
 	if pb.AutoStat {
 		if c == 0 {
