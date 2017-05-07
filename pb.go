@@ -14,6 +14,8 @@ import (
 	"gopkg.in/cheggaaa/pb.v2/termutil"
 )
 
+const Version = "2.0.0"
+
 type key int
 
 const (
