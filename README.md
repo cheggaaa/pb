@@ -2,8 +2,10 @@
 
 ### Unstable! Under development!
 
-This is proposal for a second version of progress bar
-Based on text/template
+This is proposal for the second version of progress bar   
+- based on text/template   
+- can take custom elements   
+- using colors is easy   
 
 ## Installation
 
@@ -29,13 +31,11 @@ func main() {
 	for i := 0; i < n; i++ {
 		progress.Increment()
 		time.Sleep(time.Millisecond * 20)
-		switch {
-		case i < 100:
-			progress.Set("prefix", "i < 100 ")
-		case i < 500:
-			progress.Set("prefix", "i < 500 ")
-		default:
-			progress.Set("prefix", "i >= 500 ")
+		switch i {
+		case 100:
+			progress.Set("prefix", "i > 100 ")
+		case 500:
+			progress.Set("prefix", "i > 500 ")
 		}
 	}
 	progress.Finish()
