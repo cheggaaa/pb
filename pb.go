@@ -2,6 +2,7 @@ package pb
 
 import (
 	"bytes"
+	"gopkg.in/cheggaaa/pb.v2/termutil"
 	"io"
 	"os"
 	"strconv"
@@ -10,8 +11,9 @@ import (
 	"sync/atomic"
 	"text/template"
 	"time"
-	"v2/pb/termutil"
 )
+
+const Version = "2.0.0"
 
 type key int
 
