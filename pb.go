@@ -11,7 +11,7 @@ import (
 	"text/template"
 	"time"
 
-	"gopkg.in/cheggaaa/pb.v1/termutil"
+	"gopkg.in/cheggaaa/pb.v2/termutil"
 )
 
 type key int
