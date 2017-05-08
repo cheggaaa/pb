@@ -413,9 +413,7 @@ func (pb *ProgressBar) GetWidth() int {
 // Write the current state of the progressbar
 func (pb *ProgressBar) Update() {
 	c := atomic.LoadInt64(&pb.current)
-	if pb.AlwaysUpdate {
-		pb.write(c)
-	}
+	pb.write(c)
 	if pb.AutoStat {
 		if c == 0 {
 			pb.startTime = time.Now()
