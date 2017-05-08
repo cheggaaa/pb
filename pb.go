@@ -2,7 +2,6 @@ package pb
 
 import (
 	"bytes"
-	"gopkg.in/cheggaaa/pb.v2/termutil"
 	"io"
 	"os"
 	"strconv"
@@ -11,6 +10,8 @@ import (
 	"sync/atomic"
 	"text/template"
 	"time"
+
+	"gopkg.in/cheggaaa/pb.v2/termutil"
 )
 
 const Version = "2.0.0"
