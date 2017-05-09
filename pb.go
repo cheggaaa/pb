@@ -16,7 +16,8 @@ import (
 	"gopkg.in/mattn/go-isatty.v0"
 )
 
-const Version = "2.0.0"
+// Version of ProgressBar library
+const Version = "2.0.1"
 
 type key int
 
