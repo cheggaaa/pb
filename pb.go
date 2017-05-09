@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"gopkg.in/cheggaaa/pb.v2/termutil"
+	"gopkg.in/mattn/go-colorable.v0"
+	"gopkg.in/mattn/go-isatty.v0"
 )
 
 const Version = "2.0.0"
@@ -32,6 +34,9 @@ const (
 
 	// ReturnSymbol - by default in terminal mode it's '\r'
 	ReturnSymbol
+
+	// Color by default is true when output is tty, but you can set to false for disabling colors
+	Color
 )
 
 const (
@@ -47,6 +52,8 @@ type ProgressBar struct {
 	vars           map[interface{}]interface{}
 	elements       map[string]Element
 	output         io.Writer
+	coutput        io.Writer
+	nocoutput      io.Writer
 	startTime      time.Time
 	refreshRate    time.Duration
 	tmpl           *template.Template
@@ -71,6 +78,7 @@ func (pb *ProgressBar) configure() {
 	if pb.output == nil {
 		pb.output = os.Stderr
 	}
+
 	if pb.tmpl == nil {
 		var err error
 		pb.tmpl, err = getTemplate(Default, nil)
@@ -79,8 +87,10 @@ func (pb *ProgressBar) configure() {
 		}
 	}
 	if pb.vars[Terminal] == nil {
-		if _, twidthErr := termutil.TerminalWidth(); twidthErr == nil {
-			pb.vars[Terminal] = true
+		if f, ok := pb.output.(*os.File); ok {
+			if isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd()) {
+				pb.vars[Terminal] = true
+			}
 		}
 	}
 	if pb.vars[ReturnSymbol] == nil {
@@ -88,9 +98,20 @@ func (pb *ProgressBar) configure() {
 			pb.vars[ReturnSymbol] = "\r"
 		}
 	}
+	if pb.vars[Color] == nil {
+		if tm, ok := pb.vars[Terminal].(bool); ok && tm {
+			pb.vars[Color] = true
+		}
+	}
 	if pb.refreshRate == 0 {
 		pb.refreshRate = defaultRefreshRate
 	}
+	if f, ok := pb.output.(*os.File); ok {
+		pb.coutput = colorable.NewColorable(f)
+	} else {
+		pb.coutput = pb.output
+	}
+	pb.nocoutput = colorable.NewNonColorable(pb.output)
 }
 
 // Start starts the bar
@@ -138,7 +159,11 @@ func (pb *ProgressBar) write() {
 			pb.mu.RUnlock()
 		}
 	}
-	pb.output.Write([]byte(result))
+	if pb.GetBool(Color) {
+		pb.coutput.Write([]byte(result))
+	} else {
+		pb.nocoutput.Write([]byte(result))
+	}
 }
 
 // Total return current total bar value
@@ -235,7 +260,8 @@ func (pb *ProgressBar) Width() (width int) {
 // By default this is os.Stderr
 func (pb *ProgressBar) SetWriter(w io.Writer) *ProgressBar {
 	pb.mu.Lock()
-	//pb.output // TODO: create new writer
+	pb.output = w
+	pb.configure()
 	pb.mu.Unlock()
 	return pb
 }
