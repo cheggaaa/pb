@@ -27,3 +27,23 @@ func TestProgressBarTemplate(t *testing.T) {
 		t.Error("Must be true")
 	}
 }
+
+func TestTemplateFuncs(t *testing.T) {
+	var results = make(map[string]int)
+	for i := 0; i < 100; i++ {
+		r := rndcolor("s")
+		results[r] = results[r] + 1
+	}
+	if len(results) < 6 {
+		t.Errorf("Unexpected rndcolor results count: %v", len(results))
+	}
+
+	results = make(map[string]int)
+	for i := 0; i < 100; i++ {
+		r := rnd("1", "2", "3")
+		results[r] = results[r] + 1
+	}
+	if len(results) != 3 {
+		t.Errorf("Unexpected rnd results count: %v", len(results))
+	}
+}
