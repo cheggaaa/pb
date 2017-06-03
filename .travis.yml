@@ -7,3 +7,7 @@ gobuild_args: -v -race
 os:
 - linux
 - osx
+before_install:
+  - go get github.com/mattn/goveralls
+script:
+  - $HOME/gopath/bin/goveralls -service=travis-ci
