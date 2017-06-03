@@ -20,7 +20,7 @@ func TestUtilStripString(t *testing.T) {
 	if r, e := StripString("12345", 4), "1234"; r != e {
 		t.Errorf("Invalid result '%s', expected '%s'", r, e)
 	}
-	
+
 	if r, e := StripString("12345", 5), "12345"; r != e {
 		t.Errorf("Invalid result '%s', expected '%s'", r, e)
 	}

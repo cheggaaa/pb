@@ -142,29 +142,39 @@ func (pb *ProgressBar) writer(finish chan struct{}) {
 	for {
 		select {
 		case <-pb.ticker.C:
-			pb.write()
+			pb.write(false)
 		case <-finish:
 			pb.ticker.Stop()
-			pb.write()
+			pb.write(true)
 			finish <- struct{}{}
 			return
 		}
 	}
 }
 
-func (pb *ProgressBar) write() {
-	result := pb.render()
+// Write performs write to the output
+func (pb *ProgressBar) Write() *ProgressBar {
+	pb.mu.RLock()
+	finished := pb.finished
+	pb.mu.RUnlock()
+	pb.write(finished)
+	return pb
+}
+
+func (pb *ProgressBar) write(finish bool) {
+	result, width := pb.render()
 	if pb.Err() != nil {
 		return
 	}
+	if pb.GetBool(Terminal) {
+		if r := (width - CellCount(result)); r > 0 {
+			result += strings.Repeat(" ", r)
+		}
+	}
 	if ret, ok := pb.Get(ReturnSymbol).(string); ok {
-		result += ret
-		if ret == "\r" {
-			pb.mu.RLock()
-			if pb.finished {
-				result += "\n"
-			}
-			pb.mu.RUnlock()
+		result = ret + result
+		if finish && ret == "\r" {
+			result += "\n"
 		}
 	}
 	if pb.GetBool(Color) {
@@ -312,8 +322,8 @@ func (pb *ProgressBar) Finish() *ProgressBar {
 		pb.mu.Unlock()
 		return pb
 	}
-	pb.finished = true
 	finishChan := pb.finish
+	pb.finished = true
 	pb.mu.Unlock()
 	if finishChan != nil {
 		finishChan <- struct{}{}
@@ -344,7 +354,7 @@ func (pb *ProgressBar) SetTemplate(tmpl ProgressBarTemplate) *ProgressBar {
 	return pb.SetTemplateString(string(tmpl))
 }
 
-func (pb *ProgressBar) render() (result string) {
+func (pb *ProgressBar) render() (result string, width int) {
 	defer func() {
 		if r := recover(); r != nil {
 			pb.SetErr(fmt.Errorf("render panic: %v", r))
@@ -364,13 +374,14 @@ func (pb *ProgressBar) render() (result string) {
 	pb.mu.Unlock()
 
 	pb.state.width = pb.Width()
+	width = pb.state.width
 	pb.state.total = pb.Total()
 	pb.state.current = pb.Current()
 	pb.buf.Reset()
 
 	if e := pb.tmpl.Execute(pb.buf, pb.state); e != nil {
 		pb.SetErr(e)
-		return ""
+		return "", 0
 	}
 
 	result = pb.buf.String()
@@ -378,7 +389,6 @@ func (pb *ProgressBar) render() (result string) {
 	aec := len(pb.state.recalc)
 	if aec == 0 {
 		// no adaptive elements
-		// just return result
 		return
 	}
 
@@ -388,12 +398,11 @@ func (pb *ProgressBar) render() (result string) {
 		result = strings.Replace(result, adElPlaceholder, "", -1)
 		result = StripString(result, pb.state.Width())
 	} else {
-		pb.state.adaptiveElWidth = (pb.state.width - staticWidth) / aec
+		pb.state.adaptiveElWidth = (width - staticWidth) / aec
 		for _, el := range pb.state.recalc {
 			result = strings.Replace(result, adElPlaceholder, el.ProgressElement(pb.state), 1)
 		}
 	}
-
 	pb.state.recalc = pb.state.recalc[:0]
 	return
 }
@@ -416,7 +425,8 @@ func (pb *ProgressBar) Err() error {
 
 // String return currrent string representation of ProgressBar
 func (pb *ProgressBar) String() string {
-	return pb.render()
+	res, _ := pb.render()
+	return res
 }
 
 // ProgressElement implements Element interface

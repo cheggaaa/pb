@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"gopkg.in/fatih/color.v1"
 )
 
 func TestPBBasic(t *testing.T) {
@@ -119,9 +121,10 @@ func TestPBStartFinish(t *testing.T) {
 		var buf = bytes.NewBuffer(nil)
 		bar.SetTotal(100).
 			SetCurrent(int64(i)).
-			Set(ReturnSymbol, "|").
+			SetWidth(7).
+			Set(Terminal, true).
 			SetWriter(buf).
-			SetRefreshRate(time.Millisecond * 10).
+			SetRefreshRate(time.Millisecond * 20).
 			Start()
 		if !bar.IsStarted() {
 			t.Error("Must be true")
@@ -131,18 +134,65 @@ func TestPBStartFinish(t *testing.T) {
 		if buf.Len() == 0 {
 			t.Error("no writes")
 		}
-		var results = strings.Split(strings.TrimSuffix(buf.String(), "|"), "|")
+		var resultsString = strings.TrimPrefix(buf.String(), "\r")
+		if !strings.HasSuffix(resultsString, "\n") {
+			t.Error("No end \\n symb")
+		} else {
+			resultsString = resultsString[:len(resultsString)-1]
+		}
+		var results = strings.Split(resultsString, "\r")
 		if len(results) < 3 {
 			t.Errorf("Unexpected writes count: %v", len(results))
 		}
 		exp := fmt.Sprintf("%d / 100", i)
-		for _, res := range results {
+		for i, res := range results {
 			if res != exp {
-				t.Errorf("Unexpected result: '%v'", res)
+				t.Errorf("Unexpected result[%d]: '%v'", i, res)
 			}
 		}
 		// test second finish call
 		bar.Finish()
+	}
+}
+
+func TestPBFlags(t *testing.T) {
+	// Static
+	color.NoColor = false
+	buf := bytes.NewBuffer(nil)
+	bar := ProgressBarTemplate(`{{counters . | red}}`).New()
+	bar.Set(Static, true).SetTotal(100).SetCurrent(50).SetWidth(10).SetWriter(buf).Start()
+	if bar.IsStarted() {
+		t.Error("Must be false")
+	}
+	bar.Write()
+	result := buf.String()
+	expected := "50 / 100"
+	if result != expected {
+		t.Errorf("Unexpected result: (actual/expected)\n'%s'\n'%s'", result, expected)
+	}
+	if !bar.state.IsFirst() {
+		t.Error("must be true")
+	}
+	// Color
+	bar.Set(Color, true)
+	buf.Reset()
+	bar.Write()
+	result = buf.String()
+	expected = color.RedString("50 / 100")
+	if result != expected {
+		t.Errorf("Unexpected result: (actual/expected)\n'%s'\n'%s'", result, expected)
+	}
+	if bar.state.IsFirst() {
+		t.Error("must be false")
+	}
+	// Terminal
+	bar.Set(Terminal, true).SetWriter(buf)
+	buf.Reset()
+	bar.Write()
+	result = buf.String()
+	expected = "\r" + color.RedString("50 / 100") + "  "
+	if result != expected {
+		t.Errorf("Unexpected result: (actual/expected)\n'%s'\n'%s'", result, expected)
 	}
 }
 

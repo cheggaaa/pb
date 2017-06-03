@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -17,7 +18,7 @@ func TestProgressBarTemplate(t *testing.T) {
 	}
 
 	// test Start
-	bar = ProgressBarTemplate(`{{counters . }}`).Start(42)
+	bar = ProgressBarTemplate(`{{counters . }}`).Start(42).SetWriter(bytes.NewBuffer(nil))
 	result = bar.String()
 	expected = "0 / 42"
 	if result != expected {
@@ -45,5 +46,8 @@ func TestTemplateFuncs(t *testing.T) {
 	}
 	if len(results) != 3 {
 		t.Errorf("Unexpected rnd results count: %v", len(results))
+	}
+	if r := rnd(); r != "" {
+		t.Errorf("Unexpected rnd result: '%v'", r)
 	}
 }
