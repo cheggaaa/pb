@@ -5,14 +5,35 @@ import (
 	"testing"
 )
 
-func TestUtilCellCountStripASCIISeq(t *testing.T) {
-	s := color.RedString("red") +
-		color.GreenString("hello") +
-		"simple" +
-		color.WhiteString("進捗")
-	if e, l := 18, cellCountStripASCIISeq(s); l != e {
-		t.Errorf("Invalid length %d, expected %d; '%s'", l, e, s)
+var testColorString = color.RedString("red") +
+	color.GreenString("hello") +
+	"simple" +
+	color.WhiteString("進捗")
+
+func TestUtilCellCount(t *testing.T) {
+	if e, l := 18, CellCount(testColorString); l != e {
+		t.Errorf("Invalid length %d, expected %d", l, e)
 	}
+}
+
+func TestUtilStripString(t *testing.T) {
+	if r, e := StripString("12345", 4), "1234"; r != e {
+		t.Errorf("Invalid result '%s', expected '%s'", r, e)
+	}
+	
+	if r, e := StripString("12345", 5), "12345"; r != e {
+		t.Errorf("Invalid result '%s', expected '%s'", r, e)
+	}
+	if r, e := StripString("12345", 10), "12345"; r != e {
+		t.Errorf("Invalid result '%s', expected '%s'", r, e)
+	}
+
+	s := color.RedString("1") + "23"
+	e := color.RedString("1") + "2"
+	if r := StripString(s, 2); r != e {
+		t.Errorf("Invalid result '%s', expected '%s'", r, e)
+	}
+	return
 }
 
 func TestUtilRound(t *testing.T) {
@@ -24,7 +45,7 @@ func TestUtilRound(t *testing.T) {
 	}
 }
 
-func TestFormatBytes(t *testing.T) {
+func TestUtilFormatBytes(t *testing.T) {
 	inputs := []struct {
 		v int64
 		e string
@@ -41,5 +62,12 @@ func TestFormatBytes(t *testing.T) {
 		if actual != input.e {
 			t.Errorf("Expected {%s} was {%s}", input.e, actual)
 		}
+	}
+}
+
+func BenchmarkUtilsCellCount(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		CellCount(testColorString)
 	}
 }

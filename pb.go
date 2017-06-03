@@ -2,6 +2,7 @@ package pb
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -45,11 +46,18 @@ const (
 	defaultRefreshRate = time.Millisecond * 200
 )
 
+var (
+	terminalWidth    = termutil.TerminalWidth
+	isTerminal       = isatty.IsTerminal
+	isCygwinTerminal = isatty.IsCygwinTerminal
+)
+
 // ProgressBar is the main object of bar
 type ProgressBar struct {
 	current, total int64
 	width          int
 	mu             sync.RWMutex
+	rm             sync.Mutex
 	vars           map[interface{}]interface{}
 	elements       map[string]Element
 	output         io.Writer
@@ -81,15 +89,14 @@ func (pb *ProgressBar) configure() {
 	}
 
 	if pb.tmpl == nil {
-		var err error
-		pb.tmpl, err = getTemplate(Default, nil)
-		if err != nil {
-			panic(err)
+		pb.tmpl, pb.err = getTemplate(string(Default))
+		if pb.err != nil {
+			return
 		}
 	}
 	if pb.vars[Terminal] == nil {
 		if f, ok := pb.output.(*os.File); ok {
-			if isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd()) {
+			if isTerminal(f.Fd()) || isCygwinTerminal(f.Fd()) {
 				pb.vars[Terminal] = true
 			}
 		}
@@ -178,9 +185,15 @@ func (pb *ProgressBar) SetTotal(value int64) *ProgressBar {
 	return pb
 }
 
+// SetCurrent sets the current bar value
 func (pb *ProgressBar) SetCurrent(value int64) *ProgressBar {
 	atomic.StoreInt64(&pb.current, value)
 	return pb
+}
+
+// Current return current bar value
+func (pb *ProgressBar) Current() int64 {
+	return atomic.LoadInt64(&pb.current)
 }
 
 // Add adding given int64 value to bar value
@@ -250,11 +263,20 @@ func (pb *ProgressBar) Width() (width int) {
 	pb.mu.RUnlock()
 	if width <= 0 {
 		var err error
-		if width, err = termutil.TerminalWidth(); err != nil {
+		if width, err = terminalWidth(); err != nil {
 			return defaultBarWidth
 		}
 	}
 	return
+}
+
+func (pb *ProgressBar) SetRefreshRate(dur time.Duration) *ProgressBar {
+	pb.mu.Lock()
+	if dur > 0 {
+		pb.refreshRate = dur
+	}
+	pb.mu.Unlock()
+	return pb
 }
 
 // SetWriter sets the io.Writer. Bar will write in this writer
@@ -262,6 +284,7 @@ func (pb *ProgressBar) Width() (width int) {
 func (pb *ProgressBar) SetWriter(w io.Writer) *ProgressBar {
 	pb.mu.Lock()
 	pb.output = w
+	pb.configured = false
 	pb.configure()
 	pb.mu.Unlock()
 	return pb
@@ -295,27 +318,40 @@ func (pb *ProgressBar) Finish() *ProgressBar {
 	if finishChan != nil {
 		finishChan <- struct{}{}
 		<-finishChan
+		pb.mu.Lock()
+		pb.finish = nil
+		pb.mu.Unlock()
 	}
 	return pb
 }
 
-// CellCount calculates string width in cells
-func (pb *ProgressBar) CellCount(s string) int {
-	if pb.GetBool(Terminal) {
-		return cellCountStripASCIISeq(s)
-	}
-	return cellCount(s)
+func (pb *ProgressBar) IsStarted() bool {
+	pb.mu.RLock()
+	defer pb.mu.RUnlock()
+	return pb.finish != nil
 }
 
-// SetTemplate sets ProgressBar tempate string and parse it
-func (pb *ProgressBar) SetTemplate(tmpl string) *ProgressBar {
+// SetTemplateString sets ProgressBar tempate string and parse it
+func (pb *ProgressBar) SetTemplateString(tmpl string) *ProgressBar {
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
-	pb.tmpl, pb.err = getTemplate(tmpl, pb.elements)
+	pb.tmpl, pb.err = getTemplate(tmpl)
 	return pb
+}
+
+// SetTemplateString sets ProgressBarTempate and parse it
+func (pb *ProgressBar) SetTemplate(tmpl ProgressBarTemplate) *ProgressBar {
+	return pb.SetTemplateString(string(tmpl))
 }
 
 func (pb *ProgressBar) render() (result string) {
+	defer func() {
+		if r := recover(); r != nil {
+			pb.SetErr(fmt.Errorf("render panic: %v", r))
+		}
+	}()
+	pb.rm.Lock()
+	defer pb.rm.Unlock()
 	pb.mu.Lock()
 	pb.configure()
 	if pb.state == nil {
@@ -328,8 +364,8 @@ func (pb *ProgressBar) render() (result string) {
 	pb.mu.Unlock()
 
 	pb.state.width = pb.Width()
-	pb.state.total = atomic.LoadInt64(&pb.total)
-	pb.state.current = atomic.LoadInt64(&pb.current)
+	pb.state.total = pb.Total()
+	pb.state.current = pb.Current()
 	pb.buf.Reset()
 
 	if e := pb.tmpl.Execute(pb.buf, pb.state); e != nil {
@@ -346,11 +382,18 @@ func (pb *ProgressBar) render() (result string) {
 		return
 	}
 
-	staticWidth := pb.CellCount(result) - (aec * adElPlaceholderLen)
-	pb.state.adaptiveElWidth = (pb.state.width - staticWidth) / aec
-	for _, el := range pb.state.recalc {
-		result = strings.Replace(result, adElPlaceholder, el.ProgressElement(pb.state), 1)
+	staticWidth := CellCount(result) - (aec * adElPlaceholderLen)
+
+	if pb.state.Width()-staticWidth <= 0 {
+		result = strings.Replace(result, adElPlaceholder, "", -1)
+		result = StripString(result, pb.state.Width())
+	} else {
+		pb.state.adaptiveElWidth = (pb.state.width - staticWidth) / aec
+		for _, el := range pb.state.recalc {
+			result = strings.Replace(result, adElPlaceholder, el.ProgressElement(pb.state), 1)
+		}
 	}
+
 	pb.state.recalc = pb.state.recalc[:0]
 	return
 }

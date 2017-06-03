@@ -7,6 +7,25 @@ import (
 	"text/template"
 )
 
+// ProgressBarTemplate that template string
+type ProgressBarTemplate string
+
+// New creates new bar from template
+func (pbt ProgressBarTemplate) New() *ProgressBar {
+	bar := new(ProgressBar)
+	return bar.SetTemplate(pbt)
+}
+
+// Start64 create and start new bar with given int64 total value
+func (pbt ProgressBarTemplate) Start64(total int64) *ProgressBar {
+	return pbt.New().SetTotal(total).Start()
+}
+
+// Start create and start new bar with given int total value
+func (pbt ProgressBarTemplate) Start(total int) *ProgressBar {
+	return pbt.Start64(int64(total))
+}
+
 var templateCacheMu sync.Mutex
 var templateCache = make(map[string]*template.Template)
 
@@ -24,32 +43,26 @@ var defaultTemplateFuncs = template.FuncMap{
 	"rnd":      rnd,
 }
 
-func getTemplate(tmpl string, args map[string]Element) (t *template.Template, err error) {
-	// use cache only with std elements
-	var cache = args == nil || len(args) == 0
-	if cache {
-		templateCacheMu.Lock()
-		defer templateCacheMu.Unlock()
-		t = templateCache[tmpl]
-		if t != nil {
-			// found in cache
-			return
-		}
+func getTemplate(tmpl string) (t *template.Template, err error) {
+	templateCacheMu.Lock()
+	defer templateCacheMu.Unlock()
+	t = templateCache[tmpl]
+	if t != nil {
+		// found in cache
+		return
 	}
 	t = template.New("")
-	fillTemplateFuncs(t, args)
+	fillTemplateFuncs(t)
 	_, err = t.Parse(tmpl)
 	if err != nil {
 		t = nil
 		return
 	}
-	if cache {
-		templateCache[tmpl] = t
-	}
+	templateCache[tmpl] = t
 	return
 }
 
-func fillTemplateFuncs(t *template.Template, args map[string]Element) {
+func fillTemplateFuncs(t *template.Template) {
 	t.Funcs(defaultTemplateFuncs)
 	emf := make(template.FuncMap)
 	elementsM.Lock()
@@ -57,11 +70,6 @@ func fillTemplateFuncs(t *template.Template, args map[string]Element) {
 		emf[k] = v
 	}
 	elementsM.Unlock()
-	if args != nil {
-		for k, v := range args {
-			emf[k] = v
-		}
-	}
 	t.Funcs(emf)
 	return
 }

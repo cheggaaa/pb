@@ -100,7 +100,7 @@ const (
 
 type bar struct {
 	eb  [5][]byte // elements in bytes
-	cc  [5]int    // column counts
+	cc  [5]int    // cell counts
 	buf *bytes.Buffer
 }
 
@@ -109,20 +109,7 @@ func (p *bar) write(state *State, eln, width int) int {
 	for i := 0; i < repeat; i++ {
 		p.buf.Write(p.eb[eln])
 	}
-	if m := width % p.cc[eln]; m != 0 {
-		for _, r := range string(p.eb[eln]) {
-			if rw := state.CellCount(string(r)); rw <= m {
-				m -= rw
-				p.buf.WriteRune(r)
-			} else {
-				break
-			}
-		}
-		for m > 0 {
-			p.buf.WriteByte(' ')
-			m--
-		}
-	}
+	StripStringToBuffer(string(p.eb[eln]), width%p.cc[eln], p.buf)
 	return width
 }
 
@@ -138,7 +125,7 @@ func getProgressObj(state *State, args ...string) (p *bar) {
 	for i := range p.eb {
 		arg := argsH.getNotEmptyOr(i, defaultBarEls[i])
 		if string(p.eb[i]) != arg {
-			p.cc[i] = state.CellCount(arg)
+			p.cc[i] = CellCount(arg)
 			p.eb[i] = []byte(arg)
 			if p.cc[i] == 0 {
 				p.cc[i] = 1
@@ -202,7 +189,9 @@ var ElementBar ElementFunc = func(state *State, args ...string) string {
 	}
 
 	// write bar
-	if toWrite := curCount - p.cc[2]; toWrite > 0 {
+	if total == value && state.IsFinished() {
+		widthLeft -= p.write(state, 1, curCount)
+	} else if toWrite := curCount - p.cc[2]; toWrite > 0 {
 		widthLeft -= p.write(state, 1, toWrite)
 		widthLeft -= p.write(state, 2, p.cc[2])
 	} else if curCount > 0 {

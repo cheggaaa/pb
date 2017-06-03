@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"gopkg.in/fatih/color.v1"
 )
 
 func testState(total, value int64, maxWidth int, bools ...bool) (s *State) {
@@ -30,8 +32,8 @@ func testElementBarString(t *testing.T, state *State, el Element, want string, a
 	if res != want {
 		t.Errorf("Unexpected result: '%s'; want: '%s'", res, want)
 	}
-	if state.IsAdaptiveWidth() && state.AdaptiveElWidth() != state.CellCount(res) {
-		t.Errorf("Unepected width: %d; want: %d", state.CellCount(res), state.AdaptiveElWidth())
+	if state.IsAdaptiveWidth() && state.AdaptiveElWidth() != CellCount(res) {
+		t.Errorf("Unepected width: %d; want: %d", CellCount(res), state.AdaptiveElWidth())
 	}
 }
 
@@ -61,6 +63,14 @@ func TestElementBar(t *testing.T) {
 	// middle
 	testElementBarString(t, testState(100, 50, 10, false, true), ElementBar, "[--->____]")
 	testElementBarString(t, testState(100, 50, 10, false, true), ElementBar, "<--->____>", "<", "", "", "", ">")
+	// finished
+	st := testState(100, 100, 10, false, true)
+	st.finished = true
+	testElementBarString(t, st, ElementBar, "[--------]")
+	// empty color
+	st = testState(100, 50, 10, false, true)
+	st.Set(Terminal, true)
+	testElementBarString(t, st, ElementBar, " --->____]", color.RedString("%s", ""))
 	// empty
 	testElementBarString(t, testState(0, 50, 10, false, true), ElementBar, "[________]")
 	// full
@@ -108,7 +118,7 @@ func TestElementBar(t *testing.T) {
 					if we <= 0 {
 						we = 30
 					}
-					if state.CellCount(res) != we {
+					if CellCount(res) != we {
 						t.Errorf("Unexpected len(%d): '%s'", we, res)
 					}
 				}
@@ -216,22 +226,17 @@ func BenchmarkBar(b *testing.B) {
 	var formats = map[string][]string{
 		"simple":      []string{".", ".", ".", ".", "."},
 		"unicode":     []string{"⚑", "⚒", "⚟", "⟞", "⚐"},
+		"color":       []string{color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", ".")},
 		"long":        []string{"..", "..", "..", "..", ".."},
 		"longunicode": []string{"⚑⚑", "⚒⚒", "⚟⚟", "⟞⟞", "⚐⚐"},
 	}
-	for _, asciiSeq := range []bool{false, true} {
-		for name, args := range formats {
-			state := testState(100, 50, 100, false, true)
-			if asciiSeq {
-				state.Set(Terminal, true)
-				name += "/terminal"
+	for name, args := range formats {
+		state := testState(100, 50, 100, false, true)
+		b.Run(name, func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				ElementBar(state, args...)
 			}
-			b.Run(name, func(b *testing.B) {
-				b.ReportAllocs()
-				for i := 0; i < b.N; i++ {
-					ElementBar(state, args...)
-				}
-			})
-		}
+		})
 	}
 }
