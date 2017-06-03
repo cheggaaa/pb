@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"sync"
 	"time"
 
 	"gopkg.in/VividCortex/ewma.v1"
@@ -29,6 +30,29 @@ type ElementFunc func(state *State, args ...string) string
 // ProgressElement just call self func
 func (e ElementFunc) ProgressElement(state *State, args ...string) string {
 	return e(state, args...)
+}
+
+var elementsM sync.Mutex
+
+var elements = map[string]Element{
+	"percent":  ElementPercent,
+	"counters": ElementCounters,
+	"bar":      adaptiveWrap(ElementBar),
+	"speed":    ElementSpeed,
+	"rtime":    ElementRemainingTime,
+	"etime":    ElementElapsedTime,
+	"string":   ElementString,
+	"cycle":    ElementCycle,
+}
+
+// RegisterElement give you a chance to use custom elements
+func RegisterElement(name string, el Element, adaptive bool) {
+	if adaptive {
+		el = adaptiveWrap(el)
+	}
+	elementsM.Lock()
+	elements[name] = el
+	elementsM.Unlock()
 }
 
 type argsHelper []string

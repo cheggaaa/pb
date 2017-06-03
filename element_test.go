@@ -2,6 +2,7 @@ package pb
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -220,6 +221,17 @@ func TestAdaptiveWrap(t *testing.T) {
 	state.Set("myKey", "my value1")
 	if v := state.recalc[0].ProgressElement(state); v != "my value1" {
 		t.Errorf("Unexpected result: %s", v)
+	}
+}
+
+func TestRegisterElement(t *testing.T) {
+	var testEl ElementFunc = func(state *State, args ...string) string {
+		return strings.Repeat("*", state.AdaptiveElWidth())
+	}
+	RegisterElement("testEl", testEl, true)
+	result := ProgressBarTemplate(`{{testEl . }}`).New().SetWidth(5).String()
+	if result != "*****" {
+		t.Errorf("Unexpected result: '%v'", result)
 	}
 }
 
