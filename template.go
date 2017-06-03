@@ -1,10 +1,11 @@
 package pb
 
 import (
-	"gopkg.in/fatih/color.v1"
 	"math/rand"
 	"sync"
 	"text/template"
+
+	"gopkg.in/fatih/color.v1"
 )
 
 // ProgressBarTemplate that template string

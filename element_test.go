@@ -70,6 +70,7 @@ func TestElementBar(t *testing.T) {
 	// empty color
 	st = testState(100, 50, 10, false, true)
 	st.Set(Terminal, true)
+	color.NoColor = false
 	testElementBarString(t, st, ElementBar, " --->____]", color.RedString("%s", ""))
 	// empty
 	testElementBarString(t, testState(0, 50, 10, false, true), ElementBar, "[________]")
