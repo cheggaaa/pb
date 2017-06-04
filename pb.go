@@ -18,7 +18,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "2.0.3"
+const Version = "2.0.4"
 
 type key int
 
@@ -57,8 +57,8 @@ func New64(total int64) *ProgressBar {
 	return pb.SetTotal(total)
 }
 
-// Start starts new ProgressBar with Default template
-func Start(total int) *ProgressBar {
+// StartNew starts new ProgressBar with Default template
+func StartNew(total int) *ProgressBar {
 	return New(total).Start()
 }
 
@@ -147,9 +147,13 @@ func (pb *ProgressBar) configure() {
 func (pb *ProgressBar) Start() *ProgressBar {
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
+	if pb.finish != nil {
+		return pb
+	}
 	pb.configure()
 	pb.finished = false
 	pb.state = nil
+	pb.startTime = time.Now()
 	if st, ok := pb.vars[Static].(bool); ok && st {
 		return pb
 	}
@@ -386,12 +390,15 @@ func (pb *ProgressBar) render() (result string, width int) {
 	pb.mu.Lock()
 	pb.configure()
 	if pb.state == nil {
-		pb.state = &State{first: true, ProgressBar: pb}
+		pb.state = &State{ProgressBar: pb}
 		pb.buf = bytes.NewBuffer(nil)
-	} else {
-		pb.state.first = false
 	}
+	if pb.startTime.IsZero() {
+		pb.startTime = time.Now()
+	}
+	pb.state.id++
 	pb.state.finished = pb.finished
+	pb.state.time = time.Now()
 	pb.mu.Unlock()
 
 	pb.state.width = pb.Width()
@@ -428,6 +435,8 @@ func (pb *ProgressBar) render() (result string, width int) {
 	return
 }
 
+// SetErr sets error to the ProgressBar
+// Error will be available over Err()
 func (pb *ProgressBar) SetErr(err error) *ProgressBar {
 	pb.mu.Lock()
 	pb.err = err
@@ -463,13 +472,21 @@ func (pb *ProgressBar) ProgressElement(s *State, args ...string) string {
 type State struct {
 	*ProgressBar
 
-	total, current int64
-
+	id                     uint64
+	total, current         int64
 	width, adaptiveElWidth int
-
-	first, finished, adaptive bool
+	finished, adaptive     bool
+	time                   time.Time
 
 	recalc []Element
+}
+
+// Id it's the current state identifier
+// - incremental
+// - starts with 1
+// - resets after finish/start
+func (s *State) Id() uint64 {
+	return s.id
 }
 
 // Total it's bar int64 total
@@ -504,5 +521,10 @@ func (s *State) IsFinished() bool {
 
 // IsFirst return true only in first render
 func (s *State) IsFirst() bool {
-	return s.first
+	return s.id == 1
+}
+
+// Time when state was created
+func (s *State) Time() time.Time {
+	return s.time
 }

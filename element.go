@@ -6,8 +6,6 @@ import (
 	"math"
 	"sync"
 	"time"
-
-	"gopkg.in/VividCortex/ewma.v1"
 )
 
 const (
@@ -230,70 +228,26 @@ var ElementBar ElementFunc = func(state *State, args ...string) string {
 	return p.buf.String()
 }
 
-type speed struct {
-	ewma      ewma.MovingAverage
-	prevValue int64
-	prevTime  time.Time
-}
-
-func (s *speed) currentSpeed(value int64) float64 {
-	var speed float64
-	if s.prevTime.IsZero() {
-		s.prevTime = time.Now()
-		return 0
-	}
-	dur := time.Since(s.prevTime)
-	if dur < time.Second && s.ewma != nil {
-		return s.ewma.Value()
-	}
-	diff := float64(value - s.prevValue)
-	speed = diff / dur.Seconds()
-	if s.ewma == nil {
-		s.ewma = ewma.NewMovingAverage()
-	} else {
-		s.ewma.Add(speed)
-	}
-	s.prevValue = value
-	s.prevTime = time.Now()
-	return s.ewma.Value()
-}
-
-func getSpeedObj(state *State) (s *speed) {
-	if sObj, ok := state.Get(speedObj).(*speed); ok {
-		return sObj
-	}
-	s = new(speed)
-	state.Set(speedObj, s)
-	return
-}
-
-// ElementSpeed calculates current speed by EWMA
-// Optionally can take one or two string arguments.
-// First string will be used as value for format speed, default is "%s p/s".
-// Second string will be used when speed not available, default is "? p/s"
-// In template use as follows: {{speed .}} or {{speed . "%s per second"}} or {{speed . "%s ps" "..."}
-var ElementSpeed ElementFunc = func(state *State, args ...string) string {
-	sp := getSpeedObj(state).currentSpeed(state.Value())
-	if sp == 0 {
-		return argsHelper(args).getNotEmptyOr(1, "? p/s")
-	}
-	return fmt.Sprintf(argsHelper(args).getNotEmptyOr(0, "%s p/s"), state.Format(int64(round(sp))))
-}
-
 // ElementRemainingTime calculates remaining time based on speed (EWMA)
 // Optionally can take one or two string arguments.
 // First string will be used as value for format time duration string, default is "%s".
-// Second string will be used when value not available, default is "?"
-// In template use as follows: {{rtime .}} or {{rtime . "%s remain"}} or {{rtime . "%s remain" ""}}
+// Second string will be used when bar finished and value indicates elapsed time, default is "%s"
+// Third string will be used when value not available, default is "?"
+// In template use as follows: {{rtime .}} or {{rtime . "%s remain"}} or {{rtime . "%s remain" "%s total" "???"}}
 var ElementRemainingTime ElementFunc = func(state *State, args ...string) string {
 	var rts string
-	sp := getSpeedObj(state).currentSpeed(state.Value())
-	if sp > 0 {
-		remain := float64(state.Total() - state.Value())
-		remainDur := time.Duration(remain/sp) * time.Second
-		rts = remainDur.String()
+	sp := getSpeedObj(state).value(state)
+	if !state.IsFinished() {
+		if sp > 0 {
+			remain := float64(state.Total() - state.Value())
+			remainDur := time.Duration(remain/sp) * time.Second
+			rts = remainDur.String()
+		} else {
+			return argsHelper(args).getOr(2, "?")
+		}
 	} else {
-		return argsHelper(args).getOr(1, "?")
+		rts = state.Time().Truncate(time.Second).Sub(state.StartTime().Truncate(time.Second)).String()
+		return fmt.Sprintf(argsHelper(args).getOr(1, "%s"), rts)
 	}
 	return fmt.Sprintf(argsHelper(args).getOr(0, "%s"), rts)
 }
@@ -302,7 +256,7 @@ var ElementRemainingTime ElementFunc = func(state *State, args ...string) string
 // Optionally cat take one argument - it's format for time string.
 // In template use as follows: {{etime .}} or {{etime . "%s elapsed"}}
 var ElementElapsedTime ElementFunc = func(state *State, args ...string) string {
-	etm := time.Now().Truncate(time.Second).Sub(state.StartTime().Truncate(time.Second))
+	etm := state.Time().Truncate(time.Second).Sub(state.StartTime().Truncate(time.Second))
 	return fmt.Sprintf(argsHelper(args).getOr(0, "%s"), etm.String())
 }
 

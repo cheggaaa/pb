@@ -131,12 +131,31 @@ func TestElementBar(t *testing.T) {
 
 func TestElementSpeed(t *testing.T) {
 	var state = testState(1000, 0, 0, false)
-	state.ProgressBar.startTime = time.Now()
+	state.time = time.Now()
 	for i := int64(0); i < 10; i++ {
+		state.id = uint64(i) + 1
 		state.current += 42
+		state.time = state.time.Add(time.Second)
+		state.finished = i == 9
+		if state.finished {
+			state.current += 100
+		}
 		r := ElementSpeed(state)
-		if i <= 1 {
-			// do not calc first two results
+		r2 := ElementSpeed(state)
+		if r != r2 {
+			t.Errorf("Must be the same: '%s' vs '%s'", r, r2)
+		}
+		if i < 1 {
+			// do not calc first result
+			if w := "? p/s"; r != w {
+				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
+			}
+		} else if state.finished {
+			if w := "58 p/s"; r != w {
+				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
+			}
+			state.time = state.time.Add(-time.Hour)
+			r = ElementSpeed(state)
 			if w := "? p/s"; r != w {
 				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
 			}
@@ -145,44 +164,48 @@ func TestElementSpeed(t *testing.T) {
 				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
 			}
 		}
-		var add = -time.Second
-		if i > 7 {
-			add = add / 2
-		}
-		getSpeedObj(state).prevTime = time.Now().Add(add)
 	}
 }
 
 func TestElementRemainingTime(t *testing.T) {
-	var state = testState(1000, 0, 0, false)
-	state.ProgressBar.startTime = time.Now()
+	var state = testState(100, 0, 0, false)
+	state.time = time.Now()
+	state.startTime = state.time
 	for i := int64(0); i < 10; i++ {
-		state.current += 42
+		state.id = uint64(i) + 1
+		state.time = state.time.Add(time.Second)
+		state.finished = i == 9
 		r := ElementRemainingTime(state)
-		if i <= 1 {
+		if i < 1 {
 			// do not calc first two results
 			if w := "?"; r != w {
 				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
 			}
+		} else if state.finished {
+			// final elapsed time
+			if w := "10s"; r != w {
+				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
+			}
 		} else {
-			w := fmt.Sprintf("%ds", 22-i)
+			w := fmt.Sprintf("%ds", 10-i)
 			if r != w {
 				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
 			}
 		}
-		getSpeedObj(state).prevTime = time.Now().Add(-time.Second)
+		state.current += 10
 	}
 }
 
 func TestElementElapsedTime(t *testing.T) {
 	var state = testState(1000, 0, 0, false)
-	state.ProgressBar.startTime = time.Now().Truncate(time.Second)
+	state.startTime = time.Now()
+	state.time = state.startTime
 	for i := int64(0); i < 10; i++ {
 		r := ElementElapsedTime(state)
 		if w := fmt.Sprintf("%ds", i); r != w {
 			t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
 		}
-		state.ProgressBar.startTime = state.ProgressBar.startTime.Add(-time.Second)
+		state.time = state.time.Add(time.Second)
 	}
 }
 
@@ -209,14 +232,14 @@ func TestElementCycle(t *testing.T) {
 
 func TestAdaptiveWrap(t *testing.T) {
 	var state = testState(0, 0, 0, false)
-	state.first = true
+	state.id = 1
 	state.Set("myKey", "my value")
 	el := adaptiveWrap(ElementString)
 	testElementBarString(t, state, el, adElPlaceholder, "myKey")
 	if v := state.recalc[0].ProgressElement(state); v != "my value" {
 		t.Errorf("Unexpected result: %s", v)
 	}
-	state.first = false
+	state.id = 2
 	testElementBarString(t, state, el, adElPlaceholder, "myKey1")
 	state.Set("myKey", "my value1")
 	if v := state.recalc[0].ProgressElement(state); v != "my value1" {
