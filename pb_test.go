@@ -113,7 +113,7 @@ func TestPBTemplate(t *testing.T) {
 }
 
 func TestPBStartFinish(t *testing.T) {
-	bar := ProgressBarTemplate(`{{counters . }}`).New()
+	bar := ProgressBarTemplate(`{{counters . }}`).New(0)
 	for i := int64(0); i < 2; i++ {
 		if bar.IsStarted() {
 			t.Error("Must be false")
@@ -159,8 +159,8 @@ func TestPBFlags(t *testing.T) {
 	// Static
 	color.NoColor = false
 	buf := bytes.NewBuffer(nil)
-	bar := ProgressBarTemplate(`{{counters . | red}}`).New()
-	bar.Set(Static, true).SetTotal(100).SetCurrent(50).SetWidth(10).SetWriter(buf).Start()
+	bar := ProgressBarTemplate(`{{counters . | red}}`).New(100)
+	bar.Set(Static, true).SetCurrent(50).SetWidth(10).SetWriter(buf).Start()
 	if bar.IsStarted() {
 		t.Error("Must be false")
 	}

@@ -12,14 +12,13 @@ import (
 type ProgressBarTemplate string
 
 // New creates new bar from template
-func (pbt ProgressBarTemplate) New() *ProgressBar {
-	bar := new(ProgressBar)
-	return bar.SetTemplate(pbt)
+func (pbt ProgressBarTemplate) New(total int) *ProgressBar {
+	return New(total).SetTemplate(pbt)
 }
 
 // Start64 create and start new bar with given int64 total value
 func (pbt ProgressBarTemplate) Start64(total int64) *ProgressBar {
-	return pbt.New().SetTotal(total).Start()
+	return New64(total).SetTemplate(pbt).Start()
 }
 
 // Start create and start new bar with given int total value

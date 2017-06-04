@@ -2,7 +2,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/cheggaaa/pb/badge.svg?branch=v2)](https://coveralls.io/github/cheggaaa/pb?branch=v2)
 
-### Unstable! Under development!
+### It's beta, some features may be changed
 
 This is proposal for the second version of progress bar   
 - based on text/template   

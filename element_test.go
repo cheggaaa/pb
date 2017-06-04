@@ -229,7 +229,7 @@ func TestRegisterElement(t *testing.T) {
 		return strings.Repeat("*", state.AdaptiveElWidth())
 	}
 	RegisterElement("testEl", testEl, true)
-	result := ProgressBarTemplate(`{{testEl . }}`).New().SetWidth(5).String()
+	result := ProgressBarTemplate(`{{testEl . }}`).New(0).SetWidth(5).String()
 	if result != "*****" {
 		t.Errorf("Unexpected result: '%v'", result)
 	}

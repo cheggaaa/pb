@@ -7,7 +7,7 @@ import (
 
 func TestProgressBarTemplate(t *testing.T) {
 	// test New
-	bar := ProgressBarTemplate(`{{counters . }}`).New()
+	bar := ProgressBarTemplate(`{{counters . }}`).New(0)
 	result := bar.String()
 	expected := "0"
 	if result != expected {

@@ -18,7 +18,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "2.0.2"
+const Version = "2.0.3"
 
 type key int
 
@@ -45,6 +45,27 @@ const (
 	defaultBarWidth    = 100
 	defaultRefreshRate = time.Millisecond * 200
 )
+
+// New creates new ProgressBar object
+func New(total int) *ProgressBar {
+	return New64(int64(total))
+}
+
+// New64 creates new ProgressBar object using int64 as total
+func New64(total int64) *ProgressBar {
+	pb := new(ProgressBar)
+	return pb.SetTotal(total)
+}
+
+// Start starts new ProgressBar with Default template
+func Start(total int) *ProgressBar {
+	return New(total).Start()
+}
+
+// Start64 starts new ProgressBar with Default template. Using int64 as total.
+func Start64(total int64) *ProgressBar {
+	return New64(total).Start()
+}
 
 var (
 	terminalWidth    = termutil.TerminalWidth
