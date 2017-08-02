@@ -338,24 +338,32 @@ func (pb *ProgressBar) write(current int64) {
 		size := width - barWidth
 		if size > 0 {
 			if pb.Total > 0 {
-				curCount := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
-				emptCount := size - curCount
+				curSize := int(math.Ceil((float64(current) / float64(pb.Total)) * float64(size)))
+				emptySize := size - curSize
 				barBox = pb.BarStart
-				if emptCount < 0 {
-					emptCount = 0
+				if emptySize < 0 {
+					emptySize = 0
 				}
-				if curCount > size {
-					curCount = size
+				if curSize > size {
+					curSize = size
 				}
-				if emptCount <= 0 {
-					barBox += strings.Repeat(pb.Current, curCount)
-				} else if curCount > 0 {
-					barBox += strings.Repeat(pb.Current, curCount-1) + pb.CurrentN
+
+				cursorLen := escapeAwareRuneCountInString(pb.Current)
+				if emptySize <= 0 {
+					barBox += strings.Repeat(pb.Current, curSize/cursorLen)
+				} else if curSize > 0 {
+					cursorEndLen := escapeAwareRuneCountInString(pb.CurrentN)
+					cursorRepetitions := (curSize - cursorEndLen) / cursorLen
+					barBox += strings.Repeat(pb.Current, cursorRepetitions)
+					barBox += pb.CurrentN
 				}
-				barBox += strings.Repeat(pb.Empty, emptCount) + pb.BarEnd
+
+				emptyLen := escapeAwareRuneCountInString(pb.Empty)
+				barBox += strings.Repeat(pb.Empty, emptySize/emptyLen)
+				barBox += pb.BarEnd
 			} else {
-				barBox = pb.BarStart
 				pos := size - int(current)%int(size)
+				barBox = pb.BarStart
 				if pos-1 > 0 {
 					barBox += strings.Repeat(pb.Empty, pos-1)
 				}

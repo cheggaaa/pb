@@ -79,6 +79,18 @@ func Test_Format(t *testing.T) {
 	bar.Finish()
 }
 
+func Test_MultiCharacter(t *testing.T) {
+	bar := New(5).Format(strings.Join([]string{"[[[", "---", ">>", "....", "]]"}, "\x00"))
+	bar.Start()
+	for i := 0; i < 5; i++ {
+		time.Sleep(500 * time.Millisecond)
+		bar.Increment()
+	}
+
+	time.Sleep(500 * time.Millisecond)
+	bar.Finish()
+}
+
 func Test_AutoStat(t *testing.T) {
 	bar := New(5)
 	bar.AutoStat = true
