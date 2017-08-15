@@ -47,6 +47,26 @@ func Test_CanFormatAsBytes(t *testing.T) {
 	}
 }
 
+func Test_CanFormatAsBytesDec(t *testing.T) {
+	inputs := []struct {
+		v int64
+		e string
+	}{
+		{v: 999, e: "999 B"},
+		{v: 1024, e: "1.02 KB"},
+		{v: 3*MB + 140*KB, e: "3.14 MB"},
+		{v: 2 * GB, e: "2.00 GB"},
+		{v: 2048 * GB, e: "2.05 TB"},
+	}
+
+	for _, input := range inputs {
+		actual := Format(input.v).To(U_BYTES_DEC).String()
+		if actual != input.e {
+			t.Error(fmt.Sprintf("Expected {%s} was {%s}", input.e, actual))
+		}
+	}
+}
+
 func Test_CanFormatDuration(t *testing.T) {
 	value := 10 * time.Minute
 	expected := "10m0s"
