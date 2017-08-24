@@ -65,7 +65,8 @@ func StartNew(total int) *ProgressBar {
 type Callback func(out string)
 
 type ProgressBar struct {
-	current int64 // current must be first member of struct (https://code.google.com/p/go/issues/detail?id=5278)
+	current  int64 // current must be first member of struct (https://code.google.com/p/go/issues/detail?id=5278)
+	previous int64
 
 	Total                            int64
 	RefreshRate                      time.Duration
@@ -91,6 +92,8 @@ type ProgressBar struct {
 
 	startTime  time.Time
 	startValue int64
+
+	changeTime time.Time
 
 	prefix, postfix string
 
@@ -296,8 +299,12 @@ func (pb *ProgressBar) write(current int64) {
 	}
 
 	// time left
-	fromStart := time.Now().Sub(pb.startTime)
+	pb.mu.Lock()
 	currentFromStart := current - pb.startValue
+	fromStart := time.Now().Sub(pb.startTime)
+	lastChangeTime := pb.changeTime
+	fromChange := lastChangeTime.Sub(pb.startTime)
+	pb.mu.Unlock()
 	select {
 	case <-pb.finish:
 		if pb.ShowFinalTime {
@@ -307,10 +314,13 @@ func (pb *ProgressBar) write(current int64) {
 		}
 	default:
 		if pb.ShowTimeLeft && currentFromStart > 0 {
-			perEntry := fromStart / time.Duration(currentFromStart)
+			perEntry := fromChange / time.Duration(currentFromStart)
 			var left time.Duration
 			if pb.Total > 0 {
 				left = time.Duration(pb.Total-currentFromStart) * perEntry
+				if left > time.Since(lastChangeTime) {
+					left -= time.Since(lastChangeTime)
+				}
 				left = (left / time.Second) * time.Second
 			} else {
 				left = time.Duration(currentFromStart) * perEntry
@@ -421,6 +431,13 @@ func (pb *ProgressBar) GetWidth() int {
 // Write the current state of the progressbar
 func (pb *ProgressBar) Update() {
 	c := atomic.LoadInt64(&pb.current)
+	p := atomic.LoadInt64(&pb.previous)
+	if p != c {
+		pb.mu.Lock()
+		pb.changeTime = time.Now()
+		pb.mu.Unlock()
+		atomic.StoreInt64(&pb.previous, c)
+	}
 	pb.write(c)
 	if pb.AutoStat {
 		if c == 0 {
