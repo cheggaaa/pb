@@ -242,6 +242,7 @@ func (pb *ProgressBar) Add(value int) *ProgressBar {
 	return pb.Add64(int64(value))
 }
 
+// Increment atomically increments the progress
 func (pb *ProgressBar) Increment() *ProgressBar {
 	return pb.Add64(1)
 }
@@ -360,6 +361,7 @@ func (pb *ProgressBar) Finish() *ProgressBar {
 	return pb
 }
 
+// IsStarted indicates progress bar state
 func (pb *ProgressBar) IsStarted() bool {
 	pb.mu.RLock()
 	defer pb.mu.RUnlock()
@@ -377,6 +379,14 @@ func (pb *ProgressBar) SetTemplateString(tmpl string) *ProgressBar {
 // SetTemplateString sets ProgressBarTempate and parse it
 func (pb *ProgressBar) SetTemplate(tmpl ProgressBarTemplate) *ProgressBar {
 	return pb.SetTemplateString(string(tmpl))
+}
+
+// NewProxyReader creates a wrapper for given reader, but with progress handle
+// Takes io.Reader or io.ReadCloser
+// Also, it automatically switches progress bar to handle units as bytes
+func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
+	pb.Set(Bytes, true)
+	return &Reader{r, pb}
 }
 
 func (pb *ProgressBar) render() (result string, width int) {
