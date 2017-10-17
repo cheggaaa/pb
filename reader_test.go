@@ -39,6 +39,8 @@ func TestPBProxyReader(t *testing.T) {
 	if !testReader.closed {
 		t.Errorf("Reader must be closed after call ProxyReader.Close")
 	}
+	proxyReader.Reader = nil
+	proxyReader.Close()
 }
 
 type testReaderCloser struct {
