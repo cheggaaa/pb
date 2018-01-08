@@ -57,12 +57,12 @@ func lockEcho() (quit chan int, err error) {
 
 	fd := int(tty.Fd())
 
-	oldTermStatePtr, err := unix.IoctlGetTermios(fd, ioctlReadTermios)
+	origTermStatePtr, err = unix.IoctlGetTermios(fd, ioctlReadTermios)
 	if err != nil {
 		return nil, fmt.Errorf("Can't get terminal settings: %v", err)
 	}
 
-	oldTermios := *oldTermStatePtr
+	oldTermios := *origTermStatePtr
 	newTermios := oldTermios
 	newTermios.Lflag &^= syscall.ECHO
 	newTermios.Lflag |= syscall.ICANON | syscall.ISIG
