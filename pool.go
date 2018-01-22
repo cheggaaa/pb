@@ -22,6 +22,7 @@ func StartPool(pbs ...*ProgressBar) (pool *Pool, err error) {
 type Pool struct {
 	Output        io.Writer
 	RefreshRate   time.Duration
+	wg            sync.WaitGroup
 	bars          []*ProgressBar
 	lastBarsCount int
 	quit          chan int
@@ -48,11 +49,14 @@ func (p *Pool) start() (err error) {
 		return
 	}
 	p.quit = make(chan int)
+	p.wg.Add(1)
 	go p.writer(quit)
 	return
 }
 
 func (p *Pool) writer(finish chan int) {
+	defer p.wg.Done()
+
 	var first = true
 	for {
 		select {
@@ -78,5 +82,8 @@ func (p *Pool) Stop() error {
 	p.finishOnce.Do(func() {
 		close(p.quit)
 	})
+
+	p.wg.Wait()
+
 	return unlockEcho()
 }
