@@ -22,10 +22,10 @@ func StartPool(pbs ...*ProgressBar) (pool *Pool, err error) {
 type Pool struct {
 	Output        io.Writer
 	RefreshRate   time.Duration
-	wg            sync.WaitGroup
 	bars          []*ProgressBar
 	lastBarsCount int
-	quit          chan int
+	shutdownCh    chan struct{}
+	workerCh      chan struct{}
 	m             sync.Mutex
 	finishOnce    sync.Once
 }
@@ -44,31 +44,36 @@ func (p *Pool) Add(pbs ...*ProgressBar) {
 
 func (p *Pool) start() (err error) {
 	p.RefreshRate = DefaultRefreshRate
-	quit, err := lockEcho()
+	p.shutdownCh, err = lockEcho()
 	if err != nil {
 		return
 	}
-	p.quit = make(chan int)
-	p.wg.Add(1)
-	go p.writer(quit)
+	p.workerCh = make(chan struct{})
+	go p.writer()
 	return
 }
 
-func (p *Pool) writer(finish chan int) {
-	defer p.wg.Done()
-
+func (p *Pool) writer() {
 	var first = true
+	defer func() {
+		if first == false {
+			p.print(false)
+		} else {
+			p.print(true)
+			p.print(false)
+		}
+		close(p.workerCh)
+	}()
+
 	for {
 		select {
 		case <-time.After(p.RefreshRate):
 			if p.print(first) {
 				p.print(false)
-				finish <- 1
 				return
 			}
 			first = false
-		case <-p.quit:
-			finish <- 1
+		case <-p.shutdownCh:
 			return
 		}
 	}
@@ -76,14 +81,14 @@ func (p *Pool) writer(finish chan int) {
 
 // Restore terminal state and close pool
 func (p *Pool) Stop() error {
-	// Wait until one final refresh has passed.
-	time.Sleep(p.RefreshRate)
-
 	p.finishOnce.Do(func() {
-		close(p.quit)
+		close(p.shutdownCh)
 	})
 
-	p.wg.Wait()
+	// Wait for the worker to complete
+	select {
+	case <-p.workerCh:
+	}
 
 	return unlockEcho()
 }
