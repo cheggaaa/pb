@@ -43,7 +43,7 @@ func New64(total int64) *ProgressBar {
 		ShowCounters:    true,
 		ShowBar:         true,
 		ShowTimeLeft:    true,
-		ShowElapsedTime: true,
+		ShowElapsedTime: false,
 		ShowFinalTime:   true,
 		Units:           U_NO,
 		ManualUpdate:    false,
