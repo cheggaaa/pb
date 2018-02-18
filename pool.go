@@ -12,9 +12,17 @@ import (
 // You need call pool.Stop() after work
 func StartPool(pbs ...*ProgressBar) (pool *Pool, err error) {
 	pool = new(Pool)
-	if err = pool.start(); err != nil {
+	if err = pool.Start(); err != nil {
 		return
 	}
+	pool.Add(pbs...)
+	return
+}
+
+// NewPool initialises a pool with progress bars, but
+// doesn't start it. You need to call Start manually
+func NewPool(pbs ...*ProgressBar) (pool *Pool) {
+	pool = new(Pool)
 	pool.Add(pbs...)
 	return
 }
@@ -42,7 +50,7 @@ func (p *Pool) Add(pbs ...*ProgressBar) {
 	}
 }
 
-func (p *Pool) start() (err error) {
+func (p *Pool) Start() (err error) {
 	p.RefreshRate = DefaultRefreshRate
 	p.shutdownCh, err = lockEcho()
 	if err != nil {
