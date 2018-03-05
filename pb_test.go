@@ -133,3 +133,22 @@ func Test_FinishPrint(t *testing.T) {
 		t.Errorf("Expected %q to have suffix %q", expected, actual)
 	}
 }
+
+func Test_Reset(t *testing.T) {
+	bar := StartNew(5)
+	for i := 0; i < 5; i++ {
+		bar.Increment()
+	}
+	if actual := bar.Get(); actual != 5 {
+		t.Errorf("Expected: %d; actual: %d", 5, actual)
+	}
+	bar.Finish()
+	bar.Reset(10).Start()
+	defer bar.Finish()
+	if actual := bar.Get(); actual != 0 {
+		t.Errorf("Expected: %d; actual: %d", 0, actual)
+	}
+	if actual := bar.Total; actual != 10 {
+		t.Errorf("Expected: %d; actual: %d", 10, actual)
+	}
+}
