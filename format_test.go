@@ -69,7 +69,16 @@ func Test_CanFormatAsBytesDec(t *testing.T) {
 
 func Test_CanFormatDuration(t *testing.T) {
 	value := 10 * time.Minute
-	expected := "10m0s"
+	expected := "10m00s"
+	actual := Format(int64(value)).To(U_DURATION).String()
+	if actual != expected {
+		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
+	}
+}
+
+func Test_CanFormatLongDuration(t *testing.T) {
+	value := 62 * time.Hour + 13 * time.Second
+	expected := "2d14h00m13s"
 	actual := Format(int64(value)).To(U_DURATION).String()
 	if actual != expected {
 		t.Error(fmt.Sprintf("Expected {%s} was {%s}", expected, actual))
