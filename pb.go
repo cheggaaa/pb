@@ -159,12 +159,16 @@ func (pb *ProgressBar) Add64(add int64) int64 {
 
 // Set prefix string
 func (pb *ProgressBar) Prefix(prefix string) *ProgressBar {
+	pb.mu.Lock()
+	defer pb.mu.Unlock()
 	pb.prefix = prefix
 	return pb
 }
 
 // Set postfix string
 func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
+	pb.mu.Lock()
+	defer pb.mu.Unlock()
 	pb.postfix = postfix
 	return pb
 }
@@ -348,7 +352,9 @@ func (pb *ProgressBar) write(total, current int64) {
 		speedBox = " " + Format(int64(speed)).To(pb.Units).Width(pb.UnitsWidth).PerSec().String()
 	}
 
+	pb.mu.Lock()
 	barWidth := escapeAwareRuneCountInString(countersBox + pb.BarStart + pb.BarEnd + percentBox + timeSpentBox + timeLeftBox + speedBox + pb.prefix + pb.postfix)
+	pb.mu.Unlock()
 	// bar
 	if pb.ShowBar {
 		size := width - barWidth
@@ -393,14 +399,15 @@ func (pb *ProgressBar) write(total, current int64) {
 	}
 
 	// check len
+	pb.mu.Lock()
+	defer pb.mu.Unlock()
 	out = pb.prefix + timeSpentBox + countersBox + barBox + percentBox + speedBox + timeLeftBox + pb.postfix
+
 	if cl := escapeAwareRuneCountInString(out); cl < width {
 		end = strings.Repeat(" ", width-cl)
 	}
 
 	// and print!
-	pb.mu.Lock()
-	defer pb.mu.Unlock()
 	pb.lastPrint = out + end
 	isFinish := pb.isFinish
 
