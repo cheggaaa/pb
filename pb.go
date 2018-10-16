@@ -11,7 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	utomic "github.com/uber-go/atomic"
+	pbatomic "github.com/cheggaaa/pb/atomic"
 )
 
 // Current version
@@ -98,7 +98,7 @@ type ProgressBar struct {
 
 	changeTime time.Time
 
-	prefix, postfix utomic.String
+	prefix, postfix pbatomic.String
 
 	mu        sync.Mutex
 	lastPrint string
