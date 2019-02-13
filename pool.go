@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Create and start new pool with given bars
+// StartPool: Create and start new pool with given bars
 // You need call pool.Stop() after work
 func StartPool(pbs ...*ProgressBar) (pool *Pool, err error) {
 	pool = new(Pool)
@@ -87,7 +87,7 @@ func (p *Pool) writer() {
 	}
 }
 
-// Restore terminal state and close pool
+// Stop: Restore terminal state and close pool
 func (p *Pool) Stop() error {
 	p.finishOnce.Do(func() {
 		if p.shutdownCh != nil {

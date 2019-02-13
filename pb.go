@@ -29,12 +29,12 @@ var (
 	BarStart, BarEnd, Empty, Current, CurrentN string
 )
 
-// Create new progress bar object
+// New: Create new progress bar object
 func New(total int) *ProgressBar {
 	return New64(int64(total))
 }
 
-// Create new progress bar object using int64 as total
+// New64: Create new progress bar object using int64 as total
 func New64(total int64) *ProgressBar {
 	pb := &ProgressBar{
 		Total:           total,
@@ -52,7 +52,7 @@ func New64(total int64) *ProgressBar {
 	return pb.Format(FORMAT)
 }
 
-// Create new object and start
+// StartNew: Create new object and start
 func StartNew(total int) *ProgressBar {
 	return New(total).Start()
 }
@@ -157,7 +157,7 @@ func (pb *ProgressBar) Add64(add int64) int64 {
 	return atomic.AddInt64(&pb.current, add)
 }
 
-// Set prefix string
+// Prefix: Set prefix string
 func (pb *ProgressBar) Prefix(prefix string) *ProgressBar {
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
@@ -165,7 +165,7 @@ func (pb *ProgressBar) Prefix(prefix string) *ProgressBar {
 	return pb
 }
 
-// Set postfix string
+// Postfix: Set postfix string
 func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
@@ -173,7 +173,7 @@ func (pb *ProgressBar) Postfix(postfix string) *ProgressBar {
 	return pb
 }
 
-// Set custom format for bar
+// Format: Set custom format for bar
 // Example: bar.Format("[=>_]")
 // Example: bar.Format("[\x00=\x00>\x00-\x00]") // \x00 is the delimiter
 func (pb *ProgressBar) Format(format string) *ProgressBar {
@@ -193,13 +193,13 @@ func (pb *ProgressBar) Format(format string) *ProgressBar {
 	return pb
 }
 
-// Set bar refresh rate
+// SetRefreshRate: Set bar refresh rate
 func (pb *ProgressBar) SetRefreshRate(rate time.Duration) *ProgressBar {
 	pb.RefreshRate = rate
 	return pb
 }
 
-// Set units
+// SetUnits: Set units
 // bar.SetUnits(U_NO) - by default
 // bar.SetUnits(U_BYTES) - for Mb, Kb, etc
 func (pb *ProgressBar) SetUnits(units Units) *ProgressBar {
@@ -207,21 +207,21 @@ func (pb *ProgressBar) SetUnits(units Units) *ProgressBar {
 	return pb
 }
 
-// Set max width, if width is bigger than terminal width, will be ignored
+// SetMaxWidth: Set max width, if width is bigger than terminal width, will be ignored
 func (pb *ProgressBar) SetMaxWidth(width int) *ProgressBar {
 	pb.Width = width
 	pb.ForceWidth = false
 	return pb
 }
 
-// Set bar width
+// SetWidth: Set bar width
 func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 	pb.Width = width
 	pb.ForceWidth = true
 	return pb
 }
 
-// End print
+// Finish: End print
 func (pb *ProgressBar) Finish() {
 	//Protect multiple calls
 	pb.finishOnce.Do(func() {
@@ -246,7 +246,7 @@ func (pb *ProgressBar) IsFinished() bool {
 	return pb.isFinish
 }
 
-// End print and write string 'str'
+// FinishPrint: End print and write string 'str'
 func (pb *ProgressBar) FinishPrint(str string) {
 	pb.Finish()
 	if pb.Output != nil {
@@ -256,21 +256,21 @@ func (pb *ProgressBar) FinishPrint(str string) {
 	}
 }
 
-// implement io.Writer
+// Write: implement io.Writer
 func (pb *ProgressBar) Write(p []byte) (n int, err error) {
 	n = len(p)
 	pb.Add(n)
 	return
 }
 
-// implement io.Reader
+// Read: implement io.Reader
 func (pb *ProgressBar) Read(p []byte) (n int, err error) {
 	n = len(p)
 	pb.Add(n)
 	return
 }
 
-// Create new proxy reader over bar
+// NewProxyReader: Create new proxy reader over bar
 // Takes io.Reader or io.ReadCloser
 func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 	return &Reader{r, pb}
@@ -438,7 +438,7 @@ func (pb *ProgressBar) GetWidth() int {
 	return width
 }
 
-// Write the current state of the progressbar
+// Update writes the current state of the progressbar
 func (pb *ProgressBar) Update() {
 	c := atomic.LoadInt64(&pb.current)
 	p := atomic.LoadInt64(&pb.previous)
