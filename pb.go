@@ -327,11 +327,8 @@ func (pb *ProgressBar) write(total, current int64) {
 			perEntry := fromChange / time.Duration(currentFromStart)
 			var left time.Duration
 			if total > 0 {
-				left = time.Duration(total-currentFromStart) * perEntry
+				left = time.Duration(total-current) * perEntry
 				left -= time.Since(lastChangeTime)
-				left = (left / time.Second) * time.Second
-			} else {
-				left = time.Duration(currentFromStart) * perEntry
 				left = (left / time.Second) * time.Second
 			}
 			if left > 0 {
