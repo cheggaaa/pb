@@ -276,6 +276,13 @@ func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 	return &Reader{r, pb}
 }
 
+// Create new proxy writer over bar
+// Takes io.Writer or io.WriteCloser
+func (pb *ProgressBar) NewProxyWriter(r io.Writer) *Writer {
+	return &Writer{r, pb}
+}
+
+
 func (pb *ProgressBar) write(total, current int64) {
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
