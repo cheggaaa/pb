@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"gopkg.in/VividCortex/ewma.v1"
+	"github.com/VividCortex/ewma"
 )
 
 var speedAddLimit = time.Second / 2

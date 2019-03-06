@@ -12,7 +12,7 @@ This is proposal for the second version of progress bar
 ## Installation
 
 ```
-go get gopkg.in/cheggaaa/pb.v2
+go get github.com/cheggaaa/pb
 ```   
 
 ## Usage   
@@ -21,7 +21,7 @@ go get gopkg.in/cheggaaa/pb.v2
 package main
 
 import (
-	"gopkg.in/cheggaaa/pb.v2"
+	"github.com/cheggaaa/pb"
 	"time"
 )
 

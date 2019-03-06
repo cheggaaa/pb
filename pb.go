@@ -12,9 +12,9 @@ import (
 	"text/template"
 	"time"
 
-	"gopkg.in/cheggaaa/pb.v2/termutil"
-	"gopkg.in/mattn/go-colorable.v0"
-	"gopkg.in/mattn/go-isatty.v0"
+	"github.com/cheggaaa/pb/termutil"
+	"github.com/mattn/go-colorable"
+	"github.com/mattn/go-isatty"
 )
 
 // Version of ProgressBar library

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/fatih/color.v1"
+	"github.com/fatih/color"
 )
 
 func testState(total, value int64, maxWidth int, bools ...bool) (s *State) {

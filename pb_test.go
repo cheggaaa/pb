@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/fatih/color.v1"
+	"github.com/fatih/color"
 )
 
 func TestPBBasic(t *testing.T) {

@@ -3,7 +3,7 @@ package pb
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/mattn/go-runewidth.v0"
+	"github.com/mattn/go-runewidth"
 	"math"
 	"regexp"
 	//"unicode/utf8"

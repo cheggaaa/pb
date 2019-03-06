@@ -1,7 +1,7 @@
 package pb
 
 import (
-	"gopkg.in/fatih/color.v1"
+	"github.com/fatih/color"
 	"testing"
 )
 
