@@ -1,8 +1,6 @@
 # Terminal progress bar for Go  
 
 Simple progress bar for console programs.    
-   
-Please check the new version https://github.com/cheggaaa/pb/tree/v2 (currently, it's beta)
 
 ## Installation
 
