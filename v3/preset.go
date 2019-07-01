@@ -1,7 +1,5 @@
 package pb
 
-import ()
-
 var (
 	// Full - preset with all default available elements
 	// Example: 'Prefix 20/100 [-->______] 20% 1 p/s ETA 1m Suffix'

@@ -19,7 +19,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "2.0.6"
+const Version = "3.0.1"
 
 type key int
 
@@ -388,6 +388,14 @@ func (pb *ProgressBar) SetTemplate(tmpl ProgressBarTemplate) *ProgressBar {
 func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 	pb.Set(Bytes, true)
 	return &Reader{r, pb}
+}
+
+// NewProxyWriter creates a wrapper for given writer, but with progress handle
+// Takes io.Writer or io.WriteCloser
+// Also, it automatically switches progress bar to handle units as bytes
+func (pb *ProgressBar) NewProxyWriter(r io.Writer) *Writer {
+	pb.Set(Bytes, true)
+	return &Writer{r, pb}
 }
 
 func (pb *ProgressBar) render() (result string, width int) {
