@@ -3,7 +3,7 @@ package pb_test
 import (
 	"time"
 
-	"gopkg.in/cheggaaa/pb.v1"
+	"github.com/cheggaaa/pb"
 )
 
 func Example() {

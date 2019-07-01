@@ -7,7 +7,7 @@ Please check the new version https://github.com/cheggaaa/pb/tree/v2 (currently, 
 ## Installation
 
 ```
-go get gopkg.in/cheggaaa/pb.v1
+go get github.com/cheggaaa/pb
 ```   
 
 ## Usage   
@@ -16,7 +16,7 @@ go get gopkg.in/cheggaaa/pb.v1
 package main
 
 import (
-	"gopkg.in/cheggaaa/pb.v1"
+	"github.com/cheggaaa/pb"
 	"time"
 )
 
@@ -135,7 +135,7 @@ import (
     "sync"
     "time"
 
-    "gopkg.in/cheggaaa/pb.v1"
+    "github.com/cheggaaa/pb"
 )
 
 func main() {
