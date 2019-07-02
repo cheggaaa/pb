@@ -1,3 +1,6 @@
+### Warning
+Please use v3 version ```go get github.com/cheggaaa/v3``` - it's a continuation of the v2, but  in the master branch and with the support of go modules
+
 # Terminal progress bar for Go  
 
 [![Coverage Status](https://coveralls.io/repos/github/cheggaaa/pb/badge.svg?branch=v2)](https://coveralls.io/github/cheggaaa/pb?branch=v2)
