@@ -1,5 +1,5 @@
 # Terminal progress bar for Go  
-[![Coverage Status](https://coveralls.io/repos/github/cheggaaa/pb/badge.svg)](https://coveralls.io/github/cheggaaa/pb)
+[![Coverage Status](https://coveralls.io/repos/github/cheggaaa/pb/badge.svg?branch=v2)](https://coveralls.io/github/cheggaaa/pb?branch=v2)
 
 ## Installation
 
