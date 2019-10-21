@@ -19,7 +19,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "3.0.1"
+const Version = "3.0.2"
 
 type key int
 
@@ -78,6 +78,7 @@ var (
 type ProgressBar struct {
 	current, total int64
 	width          int
+	maxWidth       int
 	mu             sync.RWMutex
 	rm             sync.Mutex
 	vars           map[interface{}]interface{}
@@ -287,6 +288,15 @@ func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 	return pb
 }
 
+// SetMaxWidth sets the bar maximum width
+// When given value <= 0 would be using the terminal width (if possible) or default value.
+func (pb *ProgressBar) SetMaxWidth(maxWidth int) *ProgressBar {
+	pb.mu.Lock()
+	pb.maxWidth = maxWidth
+	pb.mu.Unlock()
+	return pb
+}
+
 // Width return the bar width
 // It's current terminal width or settled over 'SetWidth' value.
 func (pb *ProgressBar) Width() (width int) {
@@ -297,12 +307,16 @@ func (pb *ProgressBar) Width() (width int) {
 	}()
 	pb.mu.RLock()
 	width = pb.width
+	maxWidth := pb.maxWidth
 	pb.mu.RUnlock()
 	if width <= 0 {
 		var err error
 		if width, err = terminalWidth(); err != nil {
 			return defaultBarWidth
 		}
+	}
+	if maxWidth > 0 && width > maxWidth {
+		width = maxWidth
 	}
 	return
 }

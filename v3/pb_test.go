@@ -73,6 +73,27 @@ func TestPBWidth(t *testing.T) {
 	}
 }
 
+func TestPBMaxWidth(t *testing.T) {
+	terminalWidth = func() (int, error) {
+		return 50, nil
+	}
+	// terminal width
+	bar := new(ProgressBar)
+	if a, e := bar.Width(), 50; a != e {
+		t.Errorf("Unexpected width: actual: %v; expected: %v", a, e)
+	}
+
+	bar.SetMaxWidth(55)
+	if a, e := bar.Width(), 50; a != e {
+		t.Errorf("Unexpected width: actual: %v; expected: %v", a, e)
+	}
+
+	bar.SetMaxWidth(38)
+	if a, e := bar.Width(), 38; a != e {
+		t.Errorf("Unexpected width: actual: %v; expected: %v", a, e)
+	}
+}
+
 func TestPBTemplate(t *testing.T) {
 	bar := new(ProgressBar)
 	result := bar.SetTotal(100).SetCurrent(50).SetWidth(40).String()
