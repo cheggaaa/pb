@@ -39,6 +39,7 @@ var defaultTemplateFuncs = template.FuncMap{
 	"magenta":  color.New(color.FgMagenta).SprintFunc(),
 	"cyan":     color.New(color.FgCyan).SprintFunc(),
 	"white":    color.New(color.FgWhite).SprintFunc(),
+	"reset":    color.New(color.Reset).SprintFunc(),
 	"rndcolor": rndcolor,
 	"rnd":      rnd,
 }
