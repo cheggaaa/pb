@@ -31,16 +31,17 @@ var templateCache = make(map[string]*template.Template)
 
 var defaultTemplateFuncs = template.FuncMap{
 	// colors
-	"black":    color.New(color.FgBlack).SprintFunc(),
-	"red":      color.New(color.FgRed).SprintFunc(),
-	"green":    color.New(color.FgGreen).SprintFunc(),
-	"yellow":   color.New(color.FgYellow).SprintFunc(),
-	"blue":     color.New(color.FgBlue).SprintFunc(),
-	"magenta":  color.New(color.FgMagenta).SprintFunc(),
-	"cyan":     color.New(color.FgCyan).SprintFunc(),
-	"white":    color.New(color.FgWhite).SprintFunc(),
-	"rndcolor": rndcolor,
-	"rnd":      rnd,
+	"black":      color.New(color.FgBlack).SprintFunc(),
+	"red":        color.New(color.FgRed).SprintFunc(),
+	"green":      color.New(color.FgGreen).SprintFunc(),
+	"yellow":     color.New(color.FgYellow).SprintFunc(),
+	"blue":       color.New(color.FgBlue).SprintFunc(),
+	"magenta":    color.New(color.FgMagenta).SprintFunc(),
+	"cyan":       color.New(color.FgCyan).SprintFunc(),
+	"white":      color.New(color.FgWhite).SprintFunc(),
+	"resetcolor": color.New(color.Reset).SprintFunc(),
+	"rndcolor":   rndcolor,
+	"rnd":        rnd,
 }
 
 func getTemplate(tmpl string) (t *template.Template, err error) {
