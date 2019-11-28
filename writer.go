@@ -18,6 +18,7 @@ func (r *Writer) Write(p []byte) (n int, err error) {
 
 // Close the reader when it implements io.Closer
 func (r *Writer) Close() (err error) {
+	r.bar.Finish()
 	if closer, ok := r.Writer.(io.Closer); ok {
 		return closer.Close()
 	}
