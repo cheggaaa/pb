@@ -96,8 +96,8 @@ func TestElementBar(t *testing.T) {
 	testElementBarString(t, testState(100, 50, 11, false, true), ElementBar, "進捗|aп|end", f1...)
 
 	// unicode
-	f2 := []string{"⚑", ".", "⚟", "⟞", "⚐"}
-	testElementBarString(t, testState(100, 50, 10, false, true), ElementBar, "⚑...⚟⟞⟞⟞⟞⚐", f2...)
+	f2 := []string{"⚑", ".", ">", "⟞", "⚐"}
+	testElementBarString(t, testState(100, 50, 10, false, true), ElementBar, "⚑..>⟞⟞⟞⚐", f2...)
 
 	// no adaptive
 	testElementBarString(t, testState(0, 50, 10), ElementBar, "[____________________________]")
