@@ -62,8 +62,11 @@ bar.SetRefreshRate(time.Second)
 // force set io.Writer, by default it's os.Stderr
 bar.SetWriter(os.Stdout)
 
-// bar will format numbers as bytes (B, Kb, Mb, etc)
+// bar will format numbers as bytes (B, KiB, MiB, etc)
 bar.Set(pb.Byte, true)
+
+// bar use SI bytes prefix names (B, kB) instead of IEC (B, KiB)
+bar.Set(pb.SIBytesPrefix, true)
 
 // set custom bar template
 bar.SetTemplateString(myTemplate)

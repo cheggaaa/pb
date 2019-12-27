@@ -28,6 +28,9 @@ const (
 	// bar.Set(pb.Bytes, true)
 	Bytes key = 1 << iota
 
+	// Use SI bytes prefix names (kB, MB, etc) instead of IEC prefix names (KiB, MiB, etc)
+	SIBytesPrefix
+
 	// Terminal means we're will print to terminal and can use ascii sequences
 	// Also we're will try to use terminal width
 	Terminal
@@ -351,7 +354,7 @@ func (pb *ProgressBar) StartTime() time.Time {
 // Format convert int64 to string according to the current settings
 func (pb *ProgressBar) Format(v int64) string {
 	if pb.GetBool(Bytes) {
-		return formatBytes(v)
+		return formatBytes(v, pb.GetBool(SIBytesPrefix))
 	}
 	return strconv.FormatInt(v, 10)
 }

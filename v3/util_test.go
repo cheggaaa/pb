@@ -48,17 +48,24 @@ func TestUtilRound(t *testing.T) {
 func TestUtilFormatBytes(t *testing.T) {
 	inputs := []struct {
 		v int64
+		s bool
 		e string
 	}{
-		{v: 1000, e: "1000 B"},
-		{v: 1024, e: "1.00 KiB"},
-		{v: 3*_MiB + 140*_KiB, e: "3.14 MiB"},
-		{v: 2 * _GiB, e: "2.00 GiB"},
-		{v: 2048 * _GiB, e: "2.00 TiB"},
+		{v: 1000, s: false, e: "1000 B"},
+		{v: 1024, s: false, e: "1.00 KiB"},
+		{v: 3*_MiB + 140*_KiB, s: false, e: "3.14 MiB"},
+		{v: 2 * _GiB, s: false, e: "2.00 GiB"},
+		{v: 2048 * _GiB, s: false, e: "2.00 TiB"},
+
+		{v: 999, s: true, e: "999 B"},
+		{v: 1024, s: true, e: "1.02 kB"},
+		{v: 3*_MB + 140*_kB, s: true, e: "3.14 MB"},
+		{v: 2 * _GB, s: true, e: "2.00 GB"},
+		{v: 2048 * _GB, s: true, e: "2.05 TB"},
 	}
 
 	for _, input := range inputs {
-		actual := formatBytes(input.v)
+		actual := formatBytes(input.v, input.s)
 		if actual != input.e {
 			t.Errorf("Expected {%s} was {%s}", input.e, actual)
 		}
