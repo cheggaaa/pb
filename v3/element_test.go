@@ -97,7 +97,7 @@ func TestElementBar(t *testing.T) {
 
 	// unicode
 	f2 := []string{"⚑", ".", ">", "⟞", "⚐"}
-	testElementBarString(t, testState(100, 50, 10, false, true), ElementBar, "⚑..>⟞⟞⟞⚐", f2...)
+	testElementBarString(t, testState(100, 50, 8, false, true), ElementBar, "⚑..>⟞⟞⟞⚐", f2...)
 
 	// no adaptive
 	testElementBarString(t, testState(0, 50, 10), ElementBar, "[____________________________]")
