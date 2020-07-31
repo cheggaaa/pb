@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"sync"
-	"syscall"
 )
 
 var echoLocked bool
@@ -46,7 +45,7 @@ func RawModeOff() (err error) {
 // listen exit signals and restore terminal state
 func catchTerminate(quit chan struct{}) {
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(sig, unlockSignals...)
 	defer signal.Stop(sig)
 	select {
 	case <-quit:

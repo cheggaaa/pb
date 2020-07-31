@@ -11,7 +11,13 @@ import (
 	"unsafe"
 )
 
-var tty = os.Stdin
+var (
+	tty = os.Stdin
+
+	unlockSignals = []os.Signal{
+		os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL,
+	}
+)
 
 var (
 	kernel32 = syscall.NewLazyDLL("kernel32.dll")
