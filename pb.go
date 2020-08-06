@@ -13,7 +13,7 @@ import (
 )
 
 // Current version
-const Version = "1.0.28"
+const Version = "1.0.29"
 
 const (
 	// Default refresh rate - 200ms
@@ -281,7 +281,6 @@ func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 func (pb *ProgressBar) NewProxyWriter(r io.Writer) *Writer {
 	return &Writer{r, pb}
 }
-
 
 func (pb *ProgressBar) write(total, current int64) {
 	pb.mu.Lock()
