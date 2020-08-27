@@ -63,7 +63,7 @@ bar.SetRefreshRate(time.Second)
 bar.SetWriter(os.Stdout)
 
 // bar will format numbers as bytes (B, KiB, MiB, etc)
-bar.Set(pb.Byte, true)
+bar.Set(pb.Bytes, true)
 
 // bar use SI bytes prefix names (B, kB) instead of IEC (B, KiB)
 bar.Set(pb.SIBytesPrefix, true)
