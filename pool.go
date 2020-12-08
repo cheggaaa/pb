@@ -1,4 +1,4 @@
-// +build linux darwin freebsd netbsd openbsd solaris dragonfly windows plan9
+// +build linux darwin freebsd netbsd openbsd solaris dragonfly windows plan9 aix
 
 package pb
 
