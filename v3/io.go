@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -15,6 +16,16 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 	n, err = r.Reader.Read(p)
 	r.bar.Add(n)
 	return
+}
+
+// Seek the wrapped reader when it implements io.Seeker
+func (r *Reader) Seek(offset int64, whence int) (n int64, err error) {
+	if seeker, ok := r.Reader.(io.Seeker); ok {
+		n, err = seeker.Seek(offset, whence)
+		r.bar.SetCurrent(n)
+		return n, err
+	}
+	return 0, fmt.Errorf("wrapped io.Reader does not implement io.Seeker")
 }
 
 // Close the wrapped reader when it implements io.Closer

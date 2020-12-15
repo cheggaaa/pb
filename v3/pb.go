@@ -399,8 +399,8 @@ func (pb *ProgressBar) SetTemplate(tmpl ProgressBarTemplate) *ProgressBar {
 	return pb.SetTemplateString(string(tmpl))
 }
 
-// NewProxyReader creates a wrapper for given reader, but with progress handle
-// Takes io.Reader or io.ReadCloser
+// NewProxyReadSeeker creates a wrapper for given ReadSeeker, but with progress handle
+// Takes io.Reader, io.ReadSeeker or io.ReadCloser
 // Also, it automatically switches progress bar to handle units as bytes
 func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 	pb.Set(Bytes, true)
