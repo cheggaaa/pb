@@ -21,7 +21,7 @@ const (
 	_TB = 1e12
 )
 
-var ctrlFinder = regexp.MustCompile("\x1b\x5b[0-9]+\x6d")
+var ctrlFinder = regexp.MustCompile("\x1b\x5b[0-9;]+\x6d")
 
 func CellCount(s string) int {
 	n := runewidth.StringWidth(s)
