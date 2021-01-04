@@ -43,6 +43,7 @@ func StripString(s string, w int) string {
 
 func StripStringToBuffer(s string, w int, buf *bytes.Buffer) {
 	var seqs = ctrlFinder.FindAllStringIndex(s, -1)
+	var maxWidthReached bool
 mainloop:
 	for i, r := range s {
 		for _, seq := range seqs {
@@ -51,11 +52,11 @@ mainloop:
 				continue mainloop
 			}
 		}
-		if rw := CellCount(string(r)); rw <= w {
+		if rw := CellCount(string(r)); rw <= w && !maxWidthReached {
 			w -= rw
 			buf.WriteRune(r)
 		} else {
-			break
+			maxWidthReached = true
 		}
 	}
 	for w > 0 {
