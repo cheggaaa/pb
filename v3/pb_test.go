@@ -94,6 +94,21 @@ func TestPBMaxWidth(t *testing.T) {
 	}
 }
 
+func TestAddTotal(t *testing.T) {
+	bar := new(ProgressBar)
+	bar.SetTotal(0)
+	bar.AddTotal(50)
+	got := bar.Total()
+	if got != 50 {
+		t.Errorf("bar.Total() = %v, want %v", got, 50)
+	}
+	bar.AddTotal(-10)
+	got = bar.Total()
+	if got != 40 {
+		t.Errorf("bar.Total() = %v, want %v", got, 40)
+	}
+}
+
 func TestPBTemplate(t *testing.T) {
 	bar := new(ProgressBar)
 	result := bar.SetTotal(100).SetCurrent(50).SetWidth(40).String()
