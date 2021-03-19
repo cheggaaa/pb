@@ -238,6 +238,12 @@ func (pb *ProgressBar) SetTotal(value int64) *ProgressBar {
 	return pb
 }
 
+// AddTotal adds to the total bar value
+func (pb *ProgressBar) AddTotal(value int64) *ProgressBar {
+	atomic.AddInt64(&pb.total, value)
+	return pb
+}
+
 // SetCurrent sets the current bar value
 func (pb *ProgressBar) SetCurrent(value int64) *ProgressBar {
 	atomic.StoreInt64(&pb.current, value)
