@@ -232,7 +232,11 @@ var ElementBar ElementFunc = func(state *State, args ...string) string {
 }
 
 func elapsedTime(state *State) time.Duration {
-	return state.Time().Sub(state.StartTime()).Truncate(time.Millisecond)
+	delta := state.Time().Sub(state.StartTime())
+	if delta < time.Second {
+		return delta.Truncate(time.Millisecond)
+	}
+	return delta.Truncate(time.Second)
 }
 
 // ElementRemainingTime calculates remaining time based on speed (EWMA)
