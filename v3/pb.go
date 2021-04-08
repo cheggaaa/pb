@@ -48,6 +48,9 @@ const (
 
 	// Hide the progress bar when finished, rather than leaving it up. By default it's false.
 	CleanOnFinish
+
+	// Round elapsed time to this precision. Defaults to time.Second.
+	TimeRound
 )
 
 const (
