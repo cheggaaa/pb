@@ -197,16 +197,36 @@ func TestElementRemainingTime(t *testing.T) {
 }
 
 func TestElementElapsedTime(t *testing.T) {
-	var state = testState(1000, 0, 0, false)
-	state.startTime = time.Now()
-	state.time = state.startTime
-	for i := int64(0); i < 10; i++ {
-		r := ElementElapsedTime(state)
-		if w := fmt.Sprintf("%ds", i); r != w {
-			t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
+	t.Run("default behavior", func(t *testing.T) {
+		var state = testState(1000, 0, 0, false)
+		state.startTime = time.Now()
+		state.time = state.startTime
+		for i := int64(0); i <= 12; i++ {
+			r := ElementElapsedTime(state)
+			w := fmt.Sprintf("%d.0s", i)
+			if i == 0 || i >= 10 {
+				w = fmt.Sprintf("%ds", i)
+			}
+			if r != w {
+				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
+			}
+			state.time = state.time.Add(time.Second)
 		}
-		state.time = state.time.Add(time.Second)
-	}
+	})
+	t.Run("with round set", func(t *testing.T) {
+		var state = testState(1000, 0, 0, false)
+		state.Set(TimeRound, time.Second)
+		state.startTime = time.Now()
+		state.time = state.startTime
+		for i := int64(0); i <= 10; i++ {
+			r := ElementElapsedTime(state)
+			w := fmt.Sprintf("%ds", i)
+			if r != w {
+				t.Errorf("Unexpected result[%d]: '%s' vs '%s'", i, r, w)
+			}
+			state.time = state.time.Add(time.Second)
+		}
+	})
 }
 
 func TestElementString(t *testing.T) {
