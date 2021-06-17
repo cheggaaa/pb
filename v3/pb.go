@@ -93,20 +93,20 @@ type ProgressBar struct {
 	mu             sync.RWMutex
 	rm             sync.Mutex
 	vars           map[interface{}]interface{}
-	elements       map[string]Element
-	output         io.Writer
-	coutput        io.Writer
-	nocoutput      io.Writer
-	startTime      time.Time
-	refreshRate    time.Duration
-	tmpl           *template.Template
-	state          *State
-	buf            *bytes.Buffer
-	ticker         *time.Ticker
-	finish         chan struct{}
-	finished       bool
-	configured     bool
-	err            error
+	// elements       map[string]Element
+	output      io.Writer
+	coutput     io.Writer
+	nocoutput   io.Writer
+	startTime   time.Time
+	refreshRate time.Duration
+	tmpl        *template.Template
+	state       *State
+	buf         *bytes.Buffer
+	ticker      *time.Ticker
+	finish      chan struct{}
+	finished    bool
+	configured  bool
+	err         error
 }
 
 func (pb *ProgressBar) configure() {
