@@ -73,7 +73,6 @@ func fillTemplateFuncs(t *template.Template) {
 	}
 	elementsM.Unlock()
 	t.Funcs(emf)
-	return
 }
 
 func rndcolor(s string) string {

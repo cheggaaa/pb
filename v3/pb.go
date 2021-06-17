@@ -14,10 +14,10 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/mattn/go-colorable"
-	"github.com/mattn/go-isatty"
+	colorable "github.com/mattn/go-colorable"
+	isatty "github.com/mattn/go-isatty"
 
-	"github.com/cheggaaa/pb/v3/termutil"
+	"github.com/cbehopkins/pb/v3/termutil"
 )
 
 // Version of ProgressBar library

@@ -3,10 +3,10 @@ package pb
 import (
 	"bytes"
 	"fmt"
-	"github.com/mattn/go-runewidth"
 	"math"
 	"regexp"
-	//"unicode/utf8"
+
+	"github.com/mattn/go-runewidth"
 )
 
 const (
@@ -63,10 +63,9 @@ mainloop:
 		buf.WriteByte(' ')
 		w--
 	}
-	return
 }
 
-func round(val float64) (newVal float64) {
+func round(val float64) float64 {
 	roundOn := 0.5
 	places := 0
 	var round float64
@@ -78,8 +77,7 @@ func round(val float64) (newVal float64) {
 	} else {
 		round = math.Floor(digit)
 	}
-	newVal = round / pow
-	return
+	return round / pow
 }
 
 // Convert bytes to human readable string. Like a 2 MiB, 64.2 KiB, or 2 MB, 64.2 kB

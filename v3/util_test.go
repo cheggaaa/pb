@@ -1,8 +1,9 @@
 package pb
 
 import (
-	"github.com/fatih/color"
 	"testing"
+
+	"github.com/fatih/color"
 )
 
 var testColorString = color.RedString("red") +
@@ -33,7 +34,6 @@ func TestUtilStripString(t *testing.T) {
 	if r := StripString(s, 2); r != e {
 		t.Errorf("Invalid result '%s', expected '%s'", r, e)
 	}
-	return
 }
 
 func TestUtilRound(t *testing.T) {
