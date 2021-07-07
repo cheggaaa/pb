@@ -74,6 +74,7 @@ type ProgressBar struct {
 	ShowPercent, ShowCounters        bool
 	ShowSpeed, ShowTimeLeft, ShowBar bool
 	ShowFinalTime, ShowElapsedTime   bool
+	HideCountersTotal                bool
 	Output                           io.Writer
 	Callback                         Callback
 	NotPrint                         bool
@@ -304,10 +305,18 @@ func (pb *ProgressBar) write(total, current int64) {
 	if pb.ShowCounters {
 		current := Format(current).To(pb.Units).Width(pb.UnitsWidth)
 		if total > 0 {
-			totalS := Format(total).To(pb.Units).Width(pb.UnitsWidth)
-			countersBox = fmt.Sprintf(" %s / %s ", current, totalS)
+			if pb.HideCountersTotal {
+				countersBox = fmt.Sprintf(" %s ", current)
+			} else {
+				totalS := Format(total).To(pb.Units).Width(pb.UnitsWidth)
+				countersBox = fmt.Sprintf(" %s / %s ", current, totalS)
+			}
 		} else {
-			countersBox = fmt.Sprintf(" %s / ? ", current)
+			if pb.HideCountersTotal {
+				countersBox = fmt.Sprintf(" %s ", current)
+			} else {
+				countersBox = fmt.Sprintf(" %s / ? ", current)
+			}
 		}
 	}
 
