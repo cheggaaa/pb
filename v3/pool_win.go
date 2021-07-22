@@ -5,6 +5,8 @@ package pb
 import (
 	"fmt"
 	"log"
+
+	"github.com/cheggaaa/pb/v3/termutil"
 )
 
 func (p *Pool) print(first bool) bool {
@@ -12,7 +14,7 @@ func (p *Pool) print(first bool) bool {
 	defer p.m.Unlock()
 	var out string
 	if !first {
-		coords, err := getCursorPos()
+		coords, err := termutil.GetCursorPos()
 		if err != nil {
 			log.Panic(err)
 		}
@@ -22,7 +24,7 @@ func (p *Pool) print(first bool) bool {
 		}
 		coords.X = 0
 
-		err = setCursorPos(coords)
+		err =  termutil.SetCursorPos(coords)
 		if err != nil {
 			log.Panic(err)
 		}
