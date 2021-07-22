@@ -23,7 +23,8 @@ func (p *Pool) print(first bool) bool {
 		cols = defaultBarWidth
 	}
 	if rows > 0 && len(bars) > rows {
-		bars = bars[:rows]
+		// we need to hide bars that overflow terminal height
+		bars = bars[len(bars)-rows:]
 	}
 	for _, bar := range bars {
 		if !bar.IsFinished() {
@@ -37,6 +38,6 @@ func (p *Pool) print(first bool) bool {
 	} else {
 		fmt.Fprint(os.Stderr, out)
 	}
-	p.lastBarsCount = len(p.bars)
+	p.lastBarsCount = len(bars)
 	return isFinished
 }
