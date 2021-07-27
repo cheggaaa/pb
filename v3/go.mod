@@ -8,4 +8,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.13
 )
 
+replace github.com/cbehopkins/pb/v3 => ../v3
+
 go 1.12
