@@ -56,7 +56,7 @@ func TestPBWidth(t *testing.T) {
 	// terminal width panic
 	terminalWidth = func() (int, error) {
 		panic("test")
-		// return 0, nil
+		return 0, nil
 	}
 	if a, e := bar.Width(), defaultBarWidth; a != e {
 		t.Errorf("Unexpected width: actual: %v; expected: %v", a, e)

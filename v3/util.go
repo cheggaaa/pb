@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/mattn/go-runewidth"
+	//"unicode/utf8"
 )
 
 const (
@@ -65,7 +66,7 @@ mainloop:
 	}
 }
 
-func round(val float64) float64 {
+func round(val float64) (newVal float64) {
 	roundOn := 0.5
 	places := 0
 	var round float64

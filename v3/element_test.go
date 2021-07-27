@@ -103,7 +103,7 @@ func TestElementBar(t *testing.T) {
 	testElementBarString(t, testState(0, 50, 10), ElementBar, "[____________________________]")
 
 	var formats = [][]string{
-		[]string{},
+		{},
 		f1, f2,
 	}
 
@@ -280,11 +280,11 @@ func TestRegisterElement(t *testing.T) {
 
 func BenchmarkBar(b *testing.B) {
 	var formats = map[string][]string{
-		"simple":      []string{".", ".", ".", ".", "."},
-		"unicode":     []string{"⚑", "⚒", "⚟", "⟞", "⚐"},
-		"color":       []string{color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", ".")},
-		"long":        []string{"..", "..", "..", "..", ".."},
-		"longunicode": []string{"⚑⚑", "⚒⚒", "⚟⚟", "⟞⟞", "⚐⚐"},
+		"simple":      {".", ".", ".", ".", "."},
+		"unicode":     {"⚑", "⚒", "⚟", "⟞", "⚐"},
+		"color":       {color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", "."), color.RedString("%s", ".")},
+		"long":        {"..", "..", "..", "..", ".."},
+		"longunicode": {"⚑⚑", "⚒⚒", "⚟⚟", "⟞⟞", "⚐⚐"},
 	}
 	for name, args := range formats {
 		state := testState(100, 50, 100, false, true)
