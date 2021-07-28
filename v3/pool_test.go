@@ -91,7 +91,10 @@ func TestPoolDelete(t *testing.T) {
 	expectedStringsCheck(b, expected, t)
 
 	// Remove a bar and make sure it goes
-	pool.Remove(bars[1])
+	err := pool.Remove(bars[1])
+	if err != nil{
+		t.Error("pool failed to rmove:", err)
+	}
 	expected[1].required = false
 	if len(pool.bars) != (len(bars) - 1) {
 		t.Error("Bar length problem end")
@@ -131,7 +134,7 @@ func TestPoolVariety(t *testing.T) {
 	var b bytes.Buffer
 	pool.Output = &b
 	// We should:
-	//  pool.Start()
+	// pool.Start()
 	// But this needs access to the raw terminal, so, we do the init
 	// and worker manually
 	pool.workerCh = make(chan struct{})

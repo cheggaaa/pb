@@ -520,8 +520,9 @@ func (pb *ProgressBar) Err() error {
 
 // String return currrent string representation of ProgressBar
 func (pb *ProgressBar) String() string {
-	res, _ := pb.render()
-	return res
+	res, width := pb.render()
+	repeatCnt := pb.Width() - width
+	return res + strings.Repeat(" ", repeatCnt)
 }
 
 // ProgressElement implements Element interface
@@ -554,12 +555,12 @@ func (s *State) Id() uint64 {
 	return s.id
 }
 
-// Total it's bar int64 total
+// Total its bar int64 total
 func (s *State) Total() int64 {
 	return s.total
 }
 
-// Value it's current value
+// Value its current value
 func (s *State) Value() int64 {
 	return s.current
 }
@@ -592,4 +593,26 @@ func (s *State) IsFirst() bool {
 // Time when state was created
 func (s *State) Time() time.Time {
 	return s.time
+}
+
+
+type Progressable interface {
+	Total() int64
+	Value() int64
+	Finished() bool
+}
+
+func RegisterProgressable (pr Progressable, removeFunc func(*ProgressBar)) *ProgressBar {
+	pb := new(ProgressBar)
+	go progressWorker(pr, pb, removeFunc)
+	return pb
+}
+
+func progressWorker(pr Progressable, pb *ProgressBar, removeFunc func(*ProgressBar)) {
+	for ;!pr.Finished(); time.Sleep(time.Second){
+		_ = pb.SetTotal(pr.Total())
+		_ = pb.SetCurrent(pr.Value())
+	}
+	removeFunc(pb)
+	pb.Finish()
 }

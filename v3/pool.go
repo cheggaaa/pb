@@ -3,6 +3,7 @@
 package pb
 
 import (
+	"errors"
 	"io"
 	"sync"
 	"time"
@@ -52,7 +53,7 @@ func (p *Pool) Add(pbs ...*ProgressBar) {
 }
 
 // Remove an active bar
-func (p *Pool) Remove(pb *ProgressBar) {
+func (p *Pool) Remove(pb *ProgressBar) error {
 	p.m.Lock()
 	defer p.m.Unlock()
 	for i, bar := range p.bars {
@@ -60,11 +61,13 @@ func (p *Pool) Remove(pb *ProgressBar) {
 			bar.Finish()
 			p.bars[i] = p.bars[len(p.bars)-1]
 			p.bars = p.bars[:len(p.bars)-1]
-			return
+			return nil
 		}
 	}
+	return errors.New("bar not found")
 }
 
+// Start the pool, this must be called for things to display
 func (p *Pool) Start() (err error) {
 	p.RefreshRate = defaultRefreshRate
 	p.shutdownCh, err = termutil.RawModeOn()
