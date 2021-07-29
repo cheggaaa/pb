@@ -56,10 +56,11 @@ func TestPoolDelete(t *testing.T) {
 	for i := range bars {
 		bars[i] = new(ProgressBar)
 		// Needed because default width is different to the width in the dummy terminal
-		bars[i].SetWidth(80)
+
 	}
 
 	pool := NewPool(bars...)
+	pool.SetWidth(80)
 	var b bytes.Buffer
 	pool.Output = &b
 	// We should:
@@ -92,7 +93,7 @@ func TestPoolDelete(t *testing.T) {
 
 	// Remove a bar and make sure it goes
 	err := pool.Remove(bars[1])
-	if err != nil{
+	if err != nil {
 		t.Error("pool failed to rmove:", err)
 	}
 	expected[1].required = false
@@ -106,7 +107,6 @@ func TestPoolDelete(t *testing.T) {
 
 	// Add a nw bar and test that works as expected
 	newBar := new(ProgressBar)
-	newBar.SetWidth(80)
 	pool.Add(newBar)
 	newBar.SetCurrent(50).SetTotal(1000)
 	expected = append(expected, testStruct{true, "50 / 1000 [-->_____________________________________________________] 5.00% ? p/s"})
@@ -127,10 +127,10 @@ func TestPoolVariety(t *testing.T) {
 	for i := range bars {
 		bars[i] = new(ProgressBar)
 		// Needed because default width is different to the width in the dummy terminal
-		bars[i].SetWidth(80)
 	}
 
 	pool := NewPool(bars...)
+	pool.SetWidth(80)
 	var b bytes.Buffer
 	pool.Output = &b
 	// We should:

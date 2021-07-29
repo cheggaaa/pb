@@ -5,6 +5,7 @@ package pb
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/cbehopkins/pb/v3/termutil"
 )
@@ -29,12 +30,25 @@ func (p *Pool) print(first bool) bool {
 			log.Panic(err)
 		}
 	}
+	cols, err := termutil.TerminalWidth()
+	if err != nil {
+		cols = defaultBarWidth
+	}
+	if p.width > 0 {
+		cols = p.width
+	}
 	isFinished := true
 	for _, bar := range p.bars {
 		if !bar.IsFinished() {
 			isFinished = false
 		}
-		out += fmt.Sprintf("\r%s\n", bar.String())
+		bar.SetWidth(cols)
+		msg := bar.String()
+		toAdd := cols - len(msg)
+		if toAdd < 0 {
+			toAdd = 0
+		}
+		out += fmt.Sprintf("\r%s%s\n", msg, strings.Repeat(" ", toAdd))
 	}
 	if p.Output != nil {
 		fmt.Fprint(p.Output, out)

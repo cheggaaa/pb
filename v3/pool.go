@@ -39,6 +39,7 @@ type Pool struct {
 	workerCh      chan struct{}
 	m             sync.Mutex
 	finishOnce    sync.Once
+	width         int
 }
 
 // Add progress bars.
@@ -77,6 +78,18 @@ func (p *Pool) Start() (err error) {
 	p.workerCh = make(chan struct{})
 	go p.writer()
 	return
+}
+
+func (p *Pool) SetWidth(w int) *Pool {
+	p.m.Lock()
+	defer p.m.Unlock()
+	p.width = w
+	return p
+}
+func (p *Pool) Width() int {
+	p.m.Lock()
+	defer p.m.Unlock()
+	return p.width
 }
 
 func (p *Pool) writer() {
