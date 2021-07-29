@@ -21,7 +21,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "3.0.8"
+const Version = "3.0.10"
 
 type key int
 
