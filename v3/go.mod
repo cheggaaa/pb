@@ -6,7 +6,6 @@ require (
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mattn/go-runewidth v0.0.12
-	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 )
 
 require (
