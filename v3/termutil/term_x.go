@@ -1,5 +1,4 @@
-// +build linux darwin freebsd netbsd openbsd solaris dragonfly
-// +build !appengine
+//go:build (linux || darwin || freebsd || netbsd || openbsd || solaris || dragonfly) && !appengine
 
 package termutil
 
