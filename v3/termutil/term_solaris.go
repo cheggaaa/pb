@@ -1,5 +1,4 @@
-// +build solaris
-// +build !appengine
+//go:build solaris && !appengine
 
 package termutil
 

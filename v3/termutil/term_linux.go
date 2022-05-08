@@ -1,5 +1,4 @@
-// +build linux
-// +build !appengine
+//go:build linux && !appengine
 
 package termutil
 

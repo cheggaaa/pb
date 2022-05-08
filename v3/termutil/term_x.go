@@ -1,5 +1,4 @@
-// +build linux darwin freebsd netbsd openbsd solaris dragonfly
-// +build !appengine
+//go:build (linux || darwin || freebsd || netbsd || openbsd || solaris || dragonfly) && !appengine
 
 package termutil
 
@@ -8,6 +7,8 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/term"
 )
 
 var (
@@ -16,6 +17,7 @@ var (
 	unlockSignals = []os.Signal{
 		os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL,
 	}
+	termState *term.State
 )
 
 type window struct {
@@ -53,30 +55,20 @@ func TerminalSize() (rows, cols int, err error) {
 	return int(w.Row), int(w.Col), nil
 }
 
-var oldState syscall.Termios
-
-func lockEcho() (err error) {
+func lockEcho() error {
 	fd := tty.Fd()
-	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlReadTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
-		err = fmt.Errorf("Can't get terminal settings: %v", e)
-		return
-	}
 
-	newState := oldState
-	newState.Lflag &^= syscall.ECHO
-	newState.Lflag |= syscall.ICANON | syscall.ISIG
-	newState.Iflag |= syscall.ICRNL
-	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&newState)), 0, 0, 0); e != 0 {
-		err = fmt.Errorf("Can't set terminal settings: %v", e)
-		return
+	var err error
+	if termState, err = term.MakeRaw(int(fd)); err != nil {
+		return fmt.Errorf("error when puts the terminal connected to the given file descriptor: %v", err)
 	}
-	return
+	return nil
 }
 
-func unlockEcho() (err error) {
+func unlockEcho() error {
 	fd := tty.Fd()
-	if _, _, e := syscall.Syscall6(sysIoctl, fd, ioctlWriteTermios, uintptr(unsafe.Pointer(&oldState)), 0, 0, 0); e != 0 {
-		err = fmt.Errorf("Can't set terminal settings")
+	if err := term.Restore(int(fd), termState); err != nil {
+		return fmt.Errorf("error restores the terminal connected to the given file descriptor: %w", err)
 	}
-	return
+	return nil
 }
