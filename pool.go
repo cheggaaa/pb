@@ -96,7 +96,6 @@ func (p *Pool) Stop() error {
 	})
 
 	// Wait for the worker to complete
-
 	<-p.workerCh
 
 
