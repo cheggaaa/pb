@@ -322,7 +322,7 @@ func (pb *ProgressBar) write(total, current int64) {
 
 	// time left
 	currentFromStart := current - pb.startValue
-	fromStart := time.Now().Sub(pb.startTime)
+	fromStart := time.Since(pb.startTime)
 	lastChangeTime := pb.changeTime
 	fromChange := lastChangeTime.Sub(pb.startTime)
 
@@ -333,8 +333,7 @@ func (pb *ProgressBar) write(total, current int64) {
 	select {
 	case <-pb.finish:
 		if pb.ShowFinalTime {
-			var left time.Duration
-			left = (fromStart / time.Second) * time.Second
+			var left = (fromStart / time.Second) * time.Second
 			timeLeftBox = fmt.Sprintf(" %s", left.String())
 		}
 	default:
@@ -359,7 +358,7 @@ func (pb *ProgressBar) write(total, current int64) {
 
 	// speed
 	if pb.ShowSpeed && currentFromStart > 0 {
-		fromStart := time.Now().Sub(pb.startTime)
+		fromStart := time.Since(pb.startTime)
 		speed := float64(currentFromStart) / (float64(fromStart) / float64(time.Second))
 		speedBox = " " + Format(int64(speed)).To(pb.Units).Width(pb.UnitsWidth).PerSec().String()
 	}
@@ -466,7 +465,7 @@ func (pb *ProgressBar) Update() {
 		if c == 0 {
 			pb.startTime = time.Now()
 			pb.startValue = 0
-		} else if c >= t && pb.isFinish != true {
+		} else if c >= t && !pb.isFinish{
 			pb.Finish()
 		}
 	}
