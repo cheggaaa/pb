@@ -4,7 +4,7 @@ require (
 	github.com/VividCortex/ewma v1.2.0
 	github.com/fatih/color v1.15.0
 	github.com/mattn/go-colorable v0.1.13
-	github.com/mattn/go-isatty v0.0.19
+	github.com/mattn/go-isatty v0.0.20
 	github.com/mattn/go-runewidth v0.0.15
 )
 
