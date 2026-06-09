@@ -380,17 +380,21 @@ func (pb *ProgressBar) write(total, current int64) {
 				}
 
 				cursorLen := escapeAwareRuneCountInString(pb.Current)
-				if emptySize <= 0 {
-					barBox += strings.Repeat(pb.Current, curSize/cursorLen)
-				} else if curSize > 0 {
-					cursorEndLen := escapeAwareRuneCountInString(pb.CurrentN)
-					cursorRepetitions := (curSize - cursorEndLen) / cursorLen
-					barBox += strings.Repeat(pb.Current, cursorRepetitions)
-					barBox += pb.CurrentN
+				if cursorLen != 0 {
+					if emptySize <= 0 {
+						barBox += strings.Repeat(pb.Current, curSize/cursorLen)
+					} else if curSize > 0 {
+						cursorEndLen := escapeAwareRuneCountInString(pb.CurrentN)
+						cursorRepetitions := (curSize - cursorEndLen) / cursorLen
+						barBox += strings.Repeat(pb.Current, cursorRepetitions)
+						barBox += pb.CurrentN
+					}
 				}
 
 				emptyLen := escapeAwareRuneCountInString(pb.Empty)
-				barBox += strings.Repeat(pb.Empty, emptySize/emptyLen)
+				if emptyLen != 0 {
+					barBox += strings.Repeat(pb.Empty, emptySize/emptyLen)
+				}
 				barBox += pb.BarEnd
 			} else {
 				pos := size - int(current)%int(size)
