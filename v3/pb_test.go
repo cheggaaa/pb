@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -110,6 +111,8 @@ func TestAddTotal(t *testing.T) {
 }
 
 func TestPBTemplate(t *testing.T) {
+	defer setEnv(unicodeProgressBarEnv, "false")()
+
 	bar := new(ProgressBar)
 	result := bar.SetTotal(100).SetCurrent(50).SetWidth(40).String()
 	expected := "50 / 100 [------->________] 50.00% ? p/s"
@@ -145,6 +148,33 @@ func TestPBTemplate(t *testing.T) {
 	expected = "50 / 100"
 	if result != expected {
 		t.Errorf("Unexpected result: (actual/expected)\n%s\n%s", result, expected)
+	}
+}
+
+func TestUnicodeProgressBarEnvUsesUnicodeDefault(t *testing.T) {
+	defer setEnv(unicodeProgressBarEnv, "true")()
+
+	result := New(100).SetCurrent(0).SetWidth(60).String()
+	if !strings.Contains(result, "") {
+		t.Errorf("unicode default must use empty left border: %q", result)
+	}
+	if !strings.Contains(result, "") {
+		t.Errorf("unicode default must use empty right border: %q", result)
+	}
+	if strings.Contains(result, "") {
+		t.Errorf("unicode default must not include spinner: %q", result)
+	}
+}
+
+func TestUnicodeProgressBarEnvDoesNotOverrideExplicitTemplate(t *testing.T) {
+	defer setEnv(unicodeProgressBarEnv, "true")()
+
+	result := New(100).SetCurrent(0).SetWidth(60).SetTemplate(Default).String()
+	if !strings.Contains(result, "[") {
+		t.Errorf("explicit template must keep default left border: %q", result)
+	}
+	if strings.Contains(result, "") {
+		t.Errorf("explicit template must not use unicode default: %q", result)
 	}
 }
 
@@ -229,6 +259,19 @@ func TestPBFlags(t *testing.T) {
 	expected = "\r" + color.RedString("50 / 100") + "  "
 	if result != expected {
 		t.Errorf("Unexpected result: (actual/expected)\n'%s'\n'%s'", result, expected)
+	}
+}
+
+func setEnv(key, value string) func() {
+	old, ok := os.LookupEnv(key)
+	os.Setenv(key, value)
+
+	return func() {
+		if ok {
+			os.Setenv(key, old)
+			return
+		}
+		os.Unsetenv(key)
 	}
 }
 

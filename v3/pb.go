@@ -23,6 +23,8 @@ import (
 // Version of ProgressBar library
 const Version = "3.0.8"
 
+const unicodeProgressBarEnv = "UNICODE_PROGRESS_BAR"
+
 type key int
 
 const (
@@ -123,7 +125,11 @@ func (pb *ProgressBar) configure() {
 	}
 
 	if pb.tmpl == nil {
-		pb.tmpl, pb.err = getTemplate(string(Default))
+		tmpl := Default
+		if unicodeProgressBarEnabled() {
+			tmpl = unicodeDefault
+		}
+		pb.tmpl, pb.err = getTemplate(string(tmpl))
 		if pb.err != nil {
 			return
 		}
@@ -157,6 +163,10 @@ func (pb *ProgressBar) configure() {
 		pb.coutput = pb.output
 	}
 	pb.nocoutput = colorable.NewNonColorable(pb.output)
+}
+
+func unicodeProgressBarEnabled() bool {
+	return os.Getenv(unicodeProgressBarEnv) == "true"
 }
 
 // Start starts the bar
