@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -15,8 +16,22 @@ const (
 )
 
 var (
-	defaultBarEls = [barElementCount]string{"[", "-", ">", "_", "]", "", ""}
+	asciiBarEls   = [barElementCount]string{"[", "-", ">", "_", "]", "", ""}
+	firaBarEls    = [barElementCount]string{"", "", "", "", "", "", ""}
+	defaultBarEls = asciiBarEls
 )
+
+func init() {
+	configureDefaultBarEls()
+}
+
+func configureDefaultBarEls() {
+	defaultBarEls = asciiBarEls
+	if os.Getenv(unicodeProgressBarEnv) == "true" {
+		// Only "true" is accepted; values like "1" are ignored to match the Fira Code README spec.
+		defaultBarEls = firaBarEls
+	}
+}
 
 const (
 	barLeft = iota
@@ -164,7 +179,7 @@ func getProgressObj(state *State, args ...string) (p *bar) {
 		arg := argsH.getNotEmptyOr(i, defaultBarEls[i])
 		enabled := true
 		if i >= barLeftEmpty {
-			arg = argsH.getOr(i, "")
+			arg = argsH.getOr(i, defaultBarEls[i])
 			enabled = arg != ""
 		}
 		if p.enabled[i] != enabled {

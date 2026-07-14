@@ -125,11 +125,7 @@ func (pb *ProgressBar) configure() {
 	}
 
 	if pb.tmpl == nil {
-		tmpl := Default
-		if unicodeProgressBarEnabled() {
-			tmpl = unicodeDefault
-		}
-		pb.tmpl, pb.err = getTemplate(string(tmpl))
+		pb.tmpl, pb.err = getTemplate(string(Default))
 		if pb.err != nil {
 			return
 		}
@@ -163,10 +159,6 @@ func (pb *ProgressBar) configure() {
 		pb.coutput = pb.output
 	}
 	pb.nocoutput = colorable.NewNonColorable(pb.output)
-}
-
-func unicodeProgressBarEnabled() bool {
-	return os.Getenv(unicodeProgressBarEnv) == "true"
 }
 
 // Start starts the bar

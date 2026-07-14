@@ -12,6 +12,4 @@ var (
 	// Simple - preset without speed and any timers. Only counters, bar and percents
 	// Example: 'Prefix 20/100 [-->______] 20% Suffix'
 	Simple ProgressBarTemplate = `{{with string . "prefix"}}{{.}} {{end}}{{counters . }} {{bar . }} {{percent . }}{{with string . "suffix"}} {{.}}{{end}}`
-
-	unicodeDefault ProgressBarTemplate = `{{with string . "prefix"}}{{.}} {{end}}{{counters . }} {{bar . "" "" "" "" "" "" ""}} {{percent . }} {{speed . }}{{with string . "suffix"}} {{.}}{{end}}`
 )

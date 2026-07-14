@@ -111,7 +111,7 @@ func TestAddTotal(t *testing.T) {
 }
 
 func TestPBTemplate(t *testing.T) {
-	defer setEnv(unicodeProgressBarEnv, "false")()
+	defer setUnicodeProgressBarEnv("false")()
 
 	bar := new(ProgressBar)
 	result := bar.SetTotal(100).SetCurrent(50).SetWidth(40).String()
@@ -151,30 +151,43 @@ func TestPBTemplate(t *testing.T) {
 	}
 }
 
-func TestUnicodeProgressBarEnvUsesUnicodeDefault(t *testing.T) {
-	defer setEnv(unicodeProgressBarEnv, "true")()
+func TestUnicodeProgressBarEnvUsesFiraDefaultBarElements(t *testing.T) {
+	defer setUnicodeProgressBarEnv("true")()
 
-	result := New(100).SetCurrent(0).SetWidth(60).String()
-	if !strings.Contains(result, "") {
-		t.Errorf("unicode default must use empty left border: %q", result)
-	}
-	if !strings.Contains(result, "") {
-		t.Errorf("unicode default must use empty right border: %q", result)
-	}
-	if strings.Contains(result, "") {
-		t.Errorf("unicode default must not include spinner: %q", result)
+	for name, tmpl := range map[string]ProgressBarTemplate{
+		"Full":    Full,
+		"Default": Default,
+		"Simple":  Simple,
+		"Custom":  `{{bar . }}`,
+	} {
+		result := tmpl.New(100).SetCurrent(0).SetWidth(60).String()
+		if !strings.Contains(result, "") {
+			t.Errorf("%s must use fira empty left border: %q", name, result)
+		}
+		if !strings.Contains(result, "") {
+			t.Errorf("%s must use fira right border: %q", name, result)
+		}
 	}
 }
 
-func TestUnicodeProgressBarEnvDoesNotOverrideExplicitTemplate(t *testing.T) {
-	defer setEnv(unicodeProgressBarEnv, "true")()
+func TestUnicodeProgressBarEnvIgnoresOne(t *testing.T) {
+	defer setUnicodeProgressBarEnv("1")()
 
-	result := New(100).SetCurrent(0).SetWidth(60).SetTemplate(Default).String()
-	if !strings.Contains(result, "[") {
-		t.Errorf("explicit template must keep default left border: %q", result)
+	result := ProgressBarTemplate(`{{bar . }}`).New(100).SetCurrent(0).SetWidth(10).String()
+	if result != "[________]" {
+		t.Errorf("UNICODE_PROGRESS_BAR=1 must keep ascii defaults: %q", result)
 	}
+}
+
+func TestUnicodeProgressBarEnvDoesNotOverrideExplicitBarArgs(t *testing.T) {
+	defer setUnicodeProgressBarEnv("true")()
+
+	result := ProgressBarTemplate(`{{bar . "<" "=" ">" "." ">" "" ""}}`).New(100).SetCurrent(0).SetWidth(10).String()
 	if strings.Contains(result, "") {
-		t.Errorf("explicit template must not use unicode default: %q", result)
+		t.Errorf("explicit bar args must not use fira defaults: %q", result)
+	}
+	if !strings.Contains(result, "<") {
+		t.Errorf("explicit bar args must be used: %q", result)
 	}
 }
 
@@ -272,6 +285,17 @@ func setEnv(key, value string) func() {
 			return
 		}
 		os.Unsetenv(key)
+	}
+}
+
+func setUnicodeProgressBarEnv(value string) func() {
+	restoreEnv := setEnv(unicodeProgressBarEnv, value)
+	oldDefaultBarEls := defaultBarEls
+	configureDefaultBarEls()
+
+	return func() {
+		defaultBarEls = oldDefaultBarEls
+		restoreEnv()
 	}
 }
 
