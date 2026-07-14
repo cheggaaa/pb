@@ -5,10 +5,10 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/mattn/go-colorable v0.1.15
 	github.com/mattn/go-isatty v0.0.20
-	github.com/mattn/go-runewidth v0.0.16
+	github.com/mattn/go-runewidth v0.0.24
 	golang.org/x/sys v0.46.0
 )
 
-require github.com/rivo/uniseg v0.4.7 // indirect
+require github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 
 go 1.25.0
