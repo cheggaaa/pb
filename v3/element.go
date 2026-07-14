@@ -176,10 +176,19 @@ func getProgressObj(state *State, args ...string) (p *bar) {
 	}
 	argsH := argsHelper(args)
 	for i := range p.eb {
-		arg := argsH.getNotEmptyOr(i, defaultBarEls[i])
 		enabled := true
+
+		var arg string
+		switch {
+		case i < barLeftEmpty:
+			arg = argsH.getNotEmptyOr(i, defaultBarEls[i])
+		case len(args) == 0:
+			arg = defaultBarEls[i]
+		default:
+			arg = argsH.getOr(i, "")
+		}
+
 		if i >= barLeftEmpty {
-			arg = argsH.getOr(i, defaultBarEls[i])
 			enabled = arg != ""
 		}
 		if p.enabled[i] != enabled {

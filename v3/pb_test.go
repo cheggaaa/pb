@@ -182,12 +182,44 @@ func TestUnicodeProgressBarEnvIgnoresOne(t *testing.T) {
 func TestUnicodeProgressBarEnvDoesNotOverrideExplicitBarArgs(t *testing.T) {
 	defer setUnicodeProgressBarEnv("true")()
 
-	result := ProgressBarTemplate(`{{bar . "<" "=" ">" "." ">" "" ""}}`).New(100).SetCurrent(0).SetWidth(10).String()
-	if strings.Contains(result, "") {
-		t.Errorf("explicit bar args must not use fira defaults: %q", result)
-	}
-	if !strings.Contains(result, "<") {
-		t.Errorf("explicit bar args must be used: %q", result)
+	for _, test := range []struct {
+		name     string
+		template ProgressBarTemplate
+		current  int64
+		finished bool
+		expected string
+	}{
+		{
+			name:     "five args empty",
+			template: `{{bar . "<" "=" ">" "." ">"}}`,
+			current:  0,
+			expected: "<........>",
+		},
+		{
+			name:     "five args finished",
+			template: `{{bar . "<" "=" ">" "." ">"}}`,
+			current:  100,
+			finished: true,
+			expected: "<========>",
+		},
+		{
+			name:     "explicit empty extras",
+			template: `{{bar . "<" "=" ">" "." ">" "" ""}}`,
+			current:  0,
+			expected: "<........>",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			bar := New64(100).SetTemplate(test.template).SetCurrent(test.current).SetWidth(10)
+			if test.finished {
+				bar.Finish()
+			}
+
+			result := bar.String()
+			if result != test.expected {
+				t.Errorf("explicit bar args must be used: %q; want %q", result, test.expected)
+			}
+		})
 	}
 }
 
