@@ -129,6 +129,17 @@ func TestElementBar(t *testing.T) {
 	}
 }
 
+func TestElementBarBorderOverrides(t *testing.T) {
+	format := []string{"L", "=", "=", ".", "R", "l", "F"}
+
+	testElementBarString(t, testState(100, 0, 7, false, true), ElementBar, "l.....R", format...)
+	testElementBarString(t, testState(100, 50, 7, false, true), ElementBar, "L===..R", format...)
+
+	st := testState(100, 100, 7, false, true)
+	st.finished = true
+	testElementBarString(t, st, ElementBar, "L=====F", format...)
+}
+
 func TestElementSpeed(t *testing.T) {
 	var state = testState(1000, 0, 0, false)
 	state.time = time.Now()

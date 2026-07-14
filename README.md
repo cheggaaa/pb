@@ -122,6 +122,9 @@ func main() {
 Rendering based on builtin [text/template](https://pkg.go.dev/text/template) package. You can use existing pb's elements or create you own.
 
 All available elements are described in the [element.go](v3/element.go) file.
+The `bar` element accepts five standard parts: left border, fill, current, empty, and right border. It also accepts optional sixth and seventh parts for the empty left border and finished right border.
+
+Set `UNICODE_PROGRESS_BAR=true` to use the built-in Unicode progress bar glyphs for bars that use the default bar elements when the active terminal font supports them.
 
 #### All in one example:
 

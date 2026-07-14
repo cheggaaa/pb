@@ -23,6 +23,8 @@ import (
 // Version of ProgressBar library
 const Version = "3.0.8"
 
+const unicodeProgressBarEnv = "UNICODE_PROGRESS_BAR"
+
 type key int
 
 const (

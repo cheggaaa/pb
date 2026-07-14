@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -110,6 +111,8 @@ func TestAddTotal(t *testing.T) {
 }
 
 func TestPBTemplate(t *testing.T) {
+	defer setUnicodeProgressBarEnv("false")()
+
 	bar := new(ProgressBar)
 	result := bar.SetTotal(100).SetCurrent(50).SetWidth(40).String()
 	expected := "50 / 100 [------->________] 50.00% ? p/s"
@@ -145,6 +148,78 @@ func TestPBTemplate(t *testing.T) {
 	expected = "50 / 100"
 	if result != expected {
 		t.Errorf("Unexpected result: (actual/expected)\n%s\n%s", result, expected)
+	}
+}
+
+func TestUnicodeProgressBarEnvUsesFiraDefaultBarElements(t *testing.T) {
+	defer setUnicodeProgressBarEnv("true")()
+
+	for name, tmpl := range map[string]ProgressBarTemplate{
+		"Full":    Full,
+		"Default": Default,
+		"Simple":  Simple,
+		"Custom":  `{{bar . }}`,
+	} {
+		result := tmpl.New(100).SetCurrent(0).SetWidth(60).String()
+		if !strings.Contains(result, "") {
+			t.Errorf("%s must use fira empty left border: %q", name, result)
+		}
+		if !strings.Contains(result, "") {
+			t.Errorf("%s must use fira right border: %q", name, result)
+		}
+	}
+}
+
+func TestUnicodeProgressBarEnvIgnoresOne(t *testing.T) {
+	defer setUnicodeProgressBarEnv("1")()
+
+	result := ProgressBarTemplate(`{{bar . }}`).New(100).SetCurrent(0).SetWidth(10).String()
+	if result != "[________]" {
+		t.Errorf("UNICODE_PROGRESS_BAR=1 must keep ascii defaults: %q", result)
+	}
+}
+
+func TestUnicodeProgressBarEnvDoesNotOverrideExplicitBarArgs(t *testing.T) {
+	defer setUnicodeProgressBarEnv("true")()
+
+	for _, test := range []struct {
+		name     string
+		template ProgressBarTemplate
+		current  int64
+		finished bool
+		expected string
+	}{
+		{
+			name:     "five args empty",
+			template: `{{bar . "<" "=" ">" "." ">"}}`,
+			current:  0,
+			expected: "<........>",
+		},
+		{
+			name:     "five args finished",
+			template: `{{bar . "<" "=" ">" "." ">"}}`,
+			current:  100,
+			finished: true,
+			expected: "<========>",
+		},
+		{
+			name:     "explicit empty extras",
+			template: `{{bar . "<" "=" ">" "." ">" "" ""}}`,
+			current:  0,
+			expected: "<........>",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			bar := New64(100).SetTemplate(test.template).SetCurrent(test.current).SetWidth(10)
+			if test.finished {
+				bar.Finish()
+			}
+
+			result := bar.String()
+			if result != test.expected {
+				t.Errorf("explicit bar args must be used: %q; want %q", result, test.expected)
+			}
+		})
 	}
 }
 
@@ -229,6 +304,30 @@ func TestPBFlags(t *testing.T) {
 	expected = "\r" + color.RedString("50 / 100") + "  "
 	if result != expected {
 		t.Errorf("Unexpected result: (actual/expected)\n'%s'\n'%s'", result, expected)
+	}
+}
+
+func setEnv(key, value string) func() {
+	old, ok := os.LookupEnv(key)
+	os.Setenv(key, value)
+
+	return func() {
+		if ok {
+			os.Setenv(key, old)
+			return
+		}
+		os.Unsetenv(key)
+	}
+}
+
+func setUnicodeProgressBarEnv(value string) func() {
+	restoreEnv := setEnv(unicodeProgressBarEnv, value)
+	oldDefaultBarEls := defaultBarEls
+	configureDefaultBarEls()
+
+	return func() {
+		defaultBarEls = oldDefaultBarEls
+		restoreEnv()
 	}
 }
 
