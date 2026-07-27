@@ -5,7 +5,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/mattn/go-colorable v0.1.15
 	github.com/mattn/go-isatty v0.0.23
-	github.com/mattn/go-runewidth v0.0.24
+	github.com/mattn/go-runewidth v0.0.27
 	golang.org/x/sys v0.47.0
 )
 
