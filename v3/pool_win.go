@@ -36,21 +36,42 @@ func (p *Pool) print(first bool) bool {
 		cols = defaultBarWidth
 	}
 	isFinished := true
+	visible := 0
 	for _, bar := range p.bars {
 		if !bar.IsFinished() {
 			isFinished = false
+		}
+		// honor CleanOnFinish: drop finished bars from the pool frame
+		if bar.IsFinished() && bar.GetBool(CleanOnFinish) {
+			continue
 		}
 		result := bar.String()
 		if r := cols - CellCount(result); r > 0 {
 			result += strings.Repeat(" ", r)
 		}
 		out += fmt.Sprintf("\r%s\n", result)
+		visible++
+	}
+	// wipe lines left over when the visible count shrinks
+	for i := visible; i < p.lastBarsCount; i++ {
+		out += "\r" + strings.Repeat(" ", cols) + "\n"
 	}
 	if p.Output != nil {
 		fmt.Fprint(p.Output, out)
 	} else {
 		fmt.Print(out)
 	}
-	p.lastBarsCount = len(p.bars)
+	if cleared := p.lastBarsCount - visible; cleared > 0 {
+		coords, err := termutil.GetCursorPos()
+		if err == nil {
+			coords.Y -= int16(cleared)
+			if coords.Y < 0 {
+				coords.Y = 0
+			}
+			coords.X = 0
+			_ = termutil.SetCursorPos(coords)
+		}
+	}
+	p.lastBarsCount = visible
 	return isFinished
 }
