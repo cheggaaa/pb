@@ -6,9 +6,9 @@ require (
 	github.com/mattn/go-colorable v0.1.15
 	github.com/mattn/go-isatty v0.0.24
 	github.com/mattn/go-runewidth v0.0.29
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 )
 
 require github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 
-go 1.25.0
+go 1.26.0
