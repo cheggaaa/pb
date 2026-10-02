@@ -295,8 +295,11 @@ func (pb *ProgressBar) write(total, current int64) {
 		var percent float64
 		if total > 0 {
 			percent = float64(current) / (float64(total) / float64(100))
-		} else {
-			percent = float64(current) / float64(100)
+		}
+		if percent < 0 || math.IsNaN(percent) {
+			percent = 0
+		} else if percent > 100 {
+			percent = 100
 		}
 		percentBox = fmt.Sprintf(" %6.02f%%", percent)
 	}

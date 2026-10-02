@@ -152,3 +152,37 @@ func Test_Reset(t *testing.T) {
 		t.Errorf("Expected: %d; actual: %d", 10, actual)
 	}
 }
+
+func Test_PercentageBounds(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	bar := New64(100)
+	bar.Output = buf
+	bar.ShowPercent = true
+	bar.ShowBar = false
+	bar.ShowCounters = false
+	bar.ShowTimeLeft = false
+	bar.ShowSpeed = false
+
+	// Test exceeding total: clamped to 100.00%
+	bar.write(100, 150)
+	out := buf.String()
+	if !strings.Contains(out, "100.00%") {
+		t.Errorf("Expected output to contain 100.00%%, got %q", out)
+	}
+
+	// Test negative current: clamped to 0.00%
+	buf.Reset()
+	bar.write(100, -50)
+	out = buf.String()
+	if !strings.Contains(out, "0.00%") {
+		t.Errorf("Expected output to contain 0.00%%, got %q", out)
+	}
+
+	// Test zero total: safe 0.00% without NaN or divide by zero
+	buf.Reset()
+	bar.write(0, 50)
+	out = buf.String()
+	if !strings.Contains(out, "0.00%") {
+		t.Errorf("Expected output to contain 0.00%%, got %q", out)
+	}
+}
