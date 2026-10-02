@@ -52,7 +52,9 @@ func (p *Pool) Add(pbs ...*ProgressBar) {
 }
 
 func (p *Pool) Start() (err error) {
-	p.RefreshRate = defaultRefreshRate
+	if p.RefreshRate == 0 {
+		p.RefreshRate = defaultRefreshRate
+	}
 	p.shutdownCh, err = termutil.RawModeOn()
 	if err != nil {
 		return
@@ -77,11 +79,11 @@ func (p *Pool) writer() {
 	for {
 		select {
 		case <-time.After(p.RefreshRate):
-			if p.print(first) {
-				p.print(false)
+			isFinished := p.print(first)
+			first = false
+			if isFinished {
 				return
 			}
-			first = false
 		case <-p.shutdownCh:
 			return
 		}
