@@ -104,8 +104,7 @@ type ProgressBar struct {
 	tmpl           *template.Template
 	state          *State
 	buf            *bytes.Buffer
-	ticker         *time.Ticker
-	finish         chan struct{}
+	finish         chan bool
 	finished       bool
 	configured     bool
 	err            error
@@ -175,21 +174,24 @@ func (pb *ProgressBar) Start() *ProgressBar {
 	if st, ok := pb.vars[Static].(bool); ok && st {
 		return pb
 	}
-	pb.finish = make(chan struct{})
-	pb.ticker = time.NewTicker(pb.refreshRate)
-	go pb.writer(pb.finish)
+	pb.finish = make(chan bool)
+	go pb.writer(pb.finish, time.NewTicker(pb.refreshRate))
 	return pb
 }
 
-func (pb *ProgressBar) writer(finish chan struct{}) {
+func (pb *ProgressBar) writer(finish chan bool, ticker *time.Ticker) {
 	for {
 		select {
-		case <-pb.ticker.C:
+		case <-ticker.C:
 			pb.write(false)
-		case <-finish:
-			pb.ticker.Stop()
-			pb.write(true)
-			finish <- struct{}{}
+		case final := <-finish:
+			ticker.Stop()
+			if final {
+				pb.write(true)
+			} else {
+				pb.wipe()
+			}
+			finish <- true
 			return
 		}
 	}
@@ -218,18 +220,34 @@ func (pb *ProgressBar) write(finish bool) {
 		result = ret + result
 		if finish && ret == "\r" {
 			if pb.GetBool(CleanOnFinish) {
-				// "Wipe out" progress bar by overwriting one line with blanks
-				result = "\r" + color.New(color.Reset).Sprint(strings.Repeat(" ", width)) + "\r"
+				result = wipeLine(width)
 			} else {
 				result += "\n"
 			}
 		}
 	}
+	pb.emit(result)
+}
+
+// wipe blanks the bar's line when the bar redraws in place
+func (pb *ProgressBar) wipe() {
+	if ret, ok := pb.Get(ReturnSymbol).(string); !ok || ret != "\r" {
+		return
+	}
+	pb.emit(wipeLine(pb.Width()))
+}
+
+func (pb *ProgressBar) emit(result string) {
 	if pb.GetBool(Color) {
 		pb.coutput.Write([]byte(result))
 	} else {
 		pb.nocoutput.Write([]byte(result))
 	}
+}
+
+// wipeLine overwrites one line of the given width with blanks
+func wipeLine(width int) string {
+	return "\r" + color.New(color.Reset).Sprint(strings.Repeat(" ", width)) + "\r"
 }
 
 // Total return current total bar value
@@ -394,13 +412,29 @@ func (pb *ProgressBar) Finish() *ProgressBar {
 	pb.finished = true
 	pb.mu.Unlock()
 	if finishChan != nil {
-		finishChan <- struct{}{}
+		finishChan <- true
 		<-finishChan
 		pb.mu.Lock()
 		pb.finish = nil
 		pb.mu.Unlock()
 	}
 	return pb
+}
+
+// stopWriter stops the bar's own writer and wipes its line without
+// finishing the bar. It reports whether a writer was stopped.
+func (pb *ProgressBar) stopWriter() bool {
+	pb.mu.Lock()
+	finishChan := pb.finish
+	if pb.finished || finishChan == nil {
+		pb.mu.Unlock()
+		return false
+	}
+	pb.finish = nil
+	pb.mu.Unlock()
+	finishChan <- false
+	<-finishChan
+	return true
 }
 
 // IsStarted indicates progress bar state
