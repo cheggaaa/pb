@@ -438,6 +438,15 @@ func (pb *ProgressBar) NewProxyReader(r io.Reader) *Reader {
 	return &Reader{r, pb}
 }
 
+// NewProxyReadSeeker wraps an io.ReadSeeker and enables byte units.
+// Wrapping does not seek or change the current bar value. For a reader already
+// positioned away from the start, initialize the bar with that position first.
+// Seeks can make speed and remaining-time estimates inaccurate.
+func (pb *ProgressBar) NewProxyReadSeeker(r io.ReadSeeker) *ReadSeeker {
+	pb.Set(Bytes, true)
+	return &ReadSeeker{r, pb}
+}
+
 // NewProxyWriter creates a wrapper for given writer, but with progress handle
 // Takes io.Writer or io.WriteCloser
 // Also, it automatically switches progress bar to handle units as bytes
