@@ -94,6 +94,7 @@ type ProgressBar struct {
 	maxWidth       int
 	mu             sync.RWMutex
 	rm             sync.Mutex
+	wm             sync.Mutex // one Start, Finish or stopWriter at a time
 	vars           map[interface{}]interface{}
 	elements       map[string]Element
 	output         io.Writer
@@ -162,6 +163,8 @@ func (pb *ProgressBar) configure() {
 
 // Start starts the bar
 func (pb *ProgressBar) Start() *ProgressBar {
+	pb.wm.Lock()
+	defer pb.wm.Unlock()
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
 	if pb.finish != nil {
@@ -406,37 +409,42 @@ func (pb *ProgressBar) Format(v int64) string {
 
 // Finish stops the bar
 func (pb *ProgressBar) Finish() *ProgressBar {
+	pb.wm.Lock()
+	defer pb.wm.Unlock()
 	pb.mu.Lock()
 	if pb.finished {
 		pb.mu.Unlock()
 		return pb
 	}
-	finishChan := pb.finish
 	pb.finished = true
 	pb.mu.Unlock()
-	if finishChan != nil {
-		finishChan <- true
-		<-finishChan
-		pb.mu.Lock()
-		pb.finish = nil
-		pb.mu.Unlock()
-	}
+	pb.stopWriterLocked(true)
 	return pb
 }
 
 // stopWriter stops the bar's own writer and wipes its line without
 // finishing the bar. It reports whether a writer was stopped.
 func (pb *ProgressBar) stopWriter() bool {
-	pb.mu.Lock()
+	pb.wm.Lock()
+	defer pb.wm.Unlock()
+	return pb.stopWriterLocked(false)
+}
+
+// stopWriterLocked tells the writer to draw the final state (final) or to
+// wipe its line, waits for it to exit and reports whether one was running.
+// The bar stays IsStarted until the writer is gone. The caller holds wm.
+func (pb *ProgressBar) stopWriterLocked(final bool) bool {
+	pb.mu.RLock()
 	finishChan := pb.finish
-	if pb.finished || finishChan == nil {
-		pb.mu.Unlock()
+	pb.mu.RUnlock()
+	if finishChan == nil {
 		return false
 	}
+	finishChan <- final
+	<-finishChan
+	pb.mu.Lock()
 	pb.finish = nil
 	pb.mu.Unlock()
-	finishChan <- false
-	<-finishChan
 	return true
 }
 

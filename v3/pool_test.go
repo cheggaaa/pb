@@ -7,6 +7,8 @@ import (
 	"bytes"
 	"regexp"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -126,5 +128,46 @@ func TestPoolCleanedBarsFreeRows(t *testing.T) {
 	}
 	if !strings.Contains(out, "root") {
 		t.Errorf("root is hidden: %q", out)
+	}
+}
+
+// lateWriter counts writes that land after done is set
+type lateWriter struct{ done, late atomic.Int32 }
+
+func (w *lateWriter) Write(p []byte) (int, error) {
+	if w.done.Load() == 1 {
+		w.late.Add(1)
+	}
+	return len(p), nil
+}
+
+func TestPoolAddRacesStartAndFinish(t *testing.T) {
+	for i := 0; i < 2000; i++ {
+		w := new(lateWriter)
+		bar := New(10).SetWriter(w).SetRefreshRate(10*time.Microsecond).
+			Set(Terminal, true).Set(ReturnSymbol, "\r").Set(Color, false).Start()
+		pool := new(Pool)
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() { defer wg.Done(); pool.Add(bar) }()
+		go func() {
+			defer wg.Done()
+			if i%2 == 0 {
+				bar.Start()
+				return
+			}
+			bar.Finish()
+			w.done.Store(1)
+		}()
+		wg.Wait()
+		if err := bar.Err(); err != nil {
+			t.Fatalf("iteration %d: %v", i, err)
+		}
+		if bar.IsStarted() {
+			t.Fatalf("iteration %d: bar keeps its own writer", i)
+		}
+		if n := w.late.Load(); n > 0 {
+			t.Fatalf("iteration %d: %d writes after Finish returned", i, n)
+		}
 	}
 }
