@@ -94,7 +94,7 @@ type ProgressBar struct {
 	maxWidth       int
 	mu             sync.RWMutex
 	rm             sync.Mutex
-	wm             sync.Mutex // one Start, Finish or stopWriter at a time
+	wm             sync.Mutex // one Finish or stopWriter at a time
 	vars           map[interface{}]interface{}
 	elements       map[string]Element
 	output         io.Writer
@@ -163,8 +163,6 @@ func (pb *ProgressBar) configure() {
 
 // Start starts the bar
 func (pb *ProgressBar) Start() *ProgressBar {
-	pb.wm.Lock()
-	defer pb.wm.Unlock()
 	pb.mu.Lock()
 	defer pb.mu.Unlock()
 	if pb.finish != nil {
