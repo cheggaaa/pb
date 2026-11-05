@@ -21,7 +21,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "3.2.1"
+const Version = "3.3.0"
 
 const unicodeProgressBarEnv = "UNICODE_PROGRESS_BAR"
 
