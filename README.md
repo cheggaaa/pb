@@ -117,6 +117,16 @@ func main() {
 }
 ```
 
+For checksum/replay workflows that require an `io.ReadSeeker`, use
+`bar.NewProxyReadSeeker(reader)` with a seekable reader such as `*os.File` or
+`*bytes.Reader`. Reads and closing work like `NewProxyReader`; a successful
+`Seek` sets progress to the position returned by the reader, including rewinds.
+A failed seek returns the original result/error without changing progress.
+Wrapping does not seek or change the bar's current value: if the reader is
+already positioned away from the start, initialize the bar with that position.
+Seeking can make speed and remaining-time estimates inaccurate. The ordinary
+`NewProxyReader` does not expose seeking.
+
 ## Custom Progress Bar templates
 
 Rendering based on builtin [text/template](https://pkg.go.dev/text/template) package. You can use existing pb's elements or create you own.
