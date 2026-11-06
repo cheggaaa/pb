@@ -19,6 +19,7 @@ func TestProgressBarTemplate(t *testing.T) {
 
 	// test Start
 	bar = ProgressBarTemplate(`{{counters . }}`).Start(42).SetWriter(bytes.NewBuffer(nil))
+	defer bar.Finish()
 	result = bar.String()
 	expected = "0 / 42"
 	if result != expected {
